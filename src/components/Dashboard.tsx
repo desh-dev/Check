@@ -49,6 +49,7 @@ const Dashboard = () => {
               <nav className="grid gap-2 text-lg font-medium">
                 <div className="mt-5">
                   <History />
+                  <Rules />
                 </div>
               </nav>
             </SheetContent>
