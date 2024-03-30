@@ -74,3 +74,9 @@
     @apply bg-background text-foreground;
   }
 }
+
+.board {
+  background: url('https://www.desktopbackground.org/download/o/2014/07/18/795283_card-game-backgrounds-wallpapers-walldevil-best-free-hd-desktop_1920x1080_h.jpg') center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
