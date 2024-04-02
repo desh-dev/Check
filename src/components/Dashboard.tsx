@@ -14,8 +14,12 @@ import {
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import Rules from "./Rules";
+import PlayerInfo from "./PlayerInfo";
+import { useState } from "react";
 
 const Dashboard = () => {
+  const [cardNumber, setCardNumber] = useState(1);
+
   return (
     <div className="grid min-h-screen w-full md:grid-cols-[100px_1fr] lg:grid-cols-[200px_1fr]">
       <div className="hidden border-r bg-muted/40 md:block">
@@ -87,7 +91,11 @@ const Dashboard = () => {
           <div className="flex items-center"></div>
           <div className="flex flex-1 items-center justify-center rounded-lg">
             <div className="flex flex-col items-center gap-1 text-center">
-              <Button className="mt-4">Start Game</Button>
+              <PlayerInfo
+                onSelectCardNumber={(e) =>
+                  setCardNumber(parseInt(e.target.value))
+                }
+              />
             </div>
           </div>
         </main>
