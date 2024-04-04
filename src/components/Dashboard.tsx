@@ -16,6 +16,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import Rules from "./Rules";
 import PlayerInfo from "./PlayerInfo";
 import { useState } from "react";
+import PlayerHand from "./PlayerHand";
 
 const Dashboard = () => {
   const [cardNumber, setCardNumber] = useState(1);
@@ -87,16 +88,16 @@ const Dashboard = () => {
             </DropdownMenuContent>
           </DropdownMenu>
         </header>
-        <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 border border-dashed shadow-lg board">
-          <div className="flex items-center"></div>
-          <div className="flex flex-1 items-center justify-center rounded-lg">
-            <div className="flex flex-col items-center gap-1 text-center">
-              <PlayerInfo
-                onSelectCardNumber={(e) =>
-                  setCardNumber(parseInt(e.target.value))
-                }
-              />
-            </div>
+        <main className="flex flex-1 border border-dashed shadow-lg board">
+          <div className="flex flex-1 flex-col gap-11 items-center justify-around">
+            <PlayerHand cardNumber={cardNumber} maxCards={6} />
+
+            <PlayerInfo
+              onSelectCardNumber={(e) =>
+                setCardNumber(parseInt(e.target.value))
+              }
+            />
+            <PlayerHand cardNumber={cardNumber} maxCards={6} />
           </div>
         </main>
       </div>

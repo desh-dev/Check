@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -21,6 +22,7 @@ const PlayerInfo: React.FC<Props> = ({ onSelectCardNumber }) => {
   const [player1, setPlayer1] = useState("player1");
   const [player2, setPlayer2] = useState("player2");
   const [err, setErrMsg] = useState("");
+  const [isOpen, setIsOpen] = useState(false);
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();
@@ -44,9 +46,16 @@ const PlayerInfo: React.FC<Props> = ({ onSelectCardNumber }) => {
   };
 
   return (
-    <Dialog>
+    <Dialog open={isOpen}>
       <DialogTrigger asChild>
-        <Button className="mt-4">Start Game</Button>
+        <Button
+          className="mt-4"
+          onClick={() => {
+            setIsOpen(true);
+          }}
+        >
+          Start Game
+        </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
@@ -100,9 +109,18 @@ const PlayerInfo: React.FC<Props> = ({ onSelectCardNumber }) => {
           </div>
         </div>
         <DialogFooter className="justify-center items-center">
-          <Button type="submit" onClick={handleSubmit}>
-            Start
-          </Button>
+          <DialogClose asChild>
+            <Button
+              type="button"
+              onClick={(e) => {
+                handleSubmit(e);
+                setIsOpen(false);
+              }}
+              variant="secondary"
+            >
+              Start
+            </Button>
+          </DialogClose>
         </DialogFooter>
       </DialogContent>
     </Dialog>
