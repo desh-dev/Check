@@ -1,6 +1,6 @@
 import { useState } from "react";
 import Dashboard from "./components/Dashboard";
-import gameContext, { IGameContextProps } from "./gameContext";
+import { IGameContextProps } from "./gameContext";
 import GameContext from "./gameContext";
 
 function App() {

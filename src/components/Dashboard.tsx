@@ -14,13 +14,12 @@ import {
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import Rules from "./Rules";
-import PlayerInfo from "./PlayerInfo";
-import { useState } from "react";
-import PlayerHand from "./PlayerHand";
 
-const Dashboard = () => {
-  const [cardNumber, setCardNumber] = useState(1);
+interface DashboardProps {
+  children?: React.ReactNode;
+}
 
+const Dashboard = ({ children }: DashboardProps) => {
   return (
     <div className="grid min-h-screen w-full md:grid-cols-[100px_1fr] lg:grid-cols-[200px_1fr]">
       <div className="hidden border-r bg-muted/40 md:block">
@@ -90,14 +89,7 @@ const Dashboard = () => {
         </header>
         <main className="flex flex-1 border border-dashed shadow-lg board">
           <div className="flex flex-1 flex-col gap-11 items-center justify-around">
-            <PlayerHand cardNumber={cardNumber} maxCards={6} />
-
-            <PlayerInfo
-              onSelectCardNumber={(e) =>
-                setCardNumber(parseInt(e.target.value))
-              }
-            />
-            <PlayerHand cardNumber={cardNumber} maxCards={6} />
+            {children}
           </div>
         </main>
       </div>
