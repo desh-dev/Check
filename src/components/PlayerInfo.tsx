@@ -1,5 +1,4 @@
 import { Button } from "@/components/ui/button";
-import * as DialogPrimitive from "@radix-ui/react-dialog";
 import {
   Dialog,
   DialogClose,
