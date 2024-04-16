@@ -3,6 +3,7 @@ import Dashboard from "./components/Dashboard";
 import { IGameContextProps } from "./gameContext";
 import GameContext from "./gameContext";
 import ModeSelect from "./components/ModeSelect";
+import VsPlayer from "./components/vsPlayer";
 
 function App() {
   const [isInRoom, setInRoom] = useState(false);
@@ -30,7 +31,8 @@ function App() {
     <GameContext.Provider value={gameContextValue}>
       <>
         <Dashboard>
-          <ModeSelect />
+          {!multiplayer && !vsAI && !vsPlayer && <ModeSelect />}
+          {vsPlayer && <VsPlayer />}
         </Dashboard>
       </>
     </GameContext.Provider>
