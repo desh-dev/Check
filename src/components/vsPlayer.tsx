@@ -1,5 +1,6 @@
 import { useState } from "react";
 import SelectCardNumber from "./selectCardNumber";
+import BoardCard from "./BoardCard";
 export type CardNumber = number | null;
 
 const vsPlayer = () => {
@@ -16,6 +17,7 @@ const vsPlayer = () => {
           <SelectCardNumber onSubmit={handleSubmit} />
         </div>
       )}
+      <BoardCard />
     </>
   );
 };

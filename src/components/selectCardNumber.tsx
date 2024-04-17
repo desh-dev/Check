@@ -36,7 +36,7 @@ const SelectCardNumber = ({ onSubmit }: SelectCardNumberProps) => {
           name="type"
           render={({ field }) => (
             <FormItem className="space-y-3">
-              <FormLabel>Select card number...</FormLabel>
+              <FormLabel>Select card number</FormLabel>
               <FormControl>
                 <RadioGroup
                   onValueChange={field.onChange}
