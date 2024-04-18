@@ -1,7 +1,7 @@
 import React from "react";
 
 // Define types for the props
-interface CardProps {
+export interface CardProps {
   suit: string;
   rank: string;
 }

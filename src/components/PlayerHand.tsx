@@ -1,52 +1,28 @@
-import React, { useState } from "react";
-import { Skeleton } from "./ui/skeleton";
+import React from "react";
+import Card, { CardProps } from "./Card";
 
 interface PlayerHandProps {
-  cardNumber: number; // Number of cards the player has selected
-  maxCards: number; // Maximum number of cards allowed
+  cards: CardProps[];
+  onCardClick: (card: CardProps) => void;
 }
 
-const PlayerHand: React.FC<PlayerHandProps> = ({ cardNumber, maxCards }) => {
-  const [isPopulated, setIsPopulated] = useState(false); // Flag for populated state
-
-  const handlePopulate = () => {
-    // Simulate card selection process (replace with actual card data fetching)
-    setIsPopulated(true);
-  };
-
+const PlayerHand: React.FC<PlayerHandProps> = ({ cards, onCardClick }) => {
   return (
-    <div className="player-hand">
-      {!isPopulated && (
-        <div className="skeleton flex flex-1 gap-1 border border-dashed rounded-lg p-4 shadow-lg">
-          {/* Render skeleton elements for unpopulated cards */}
-          {Array.from({ length: maxCards }, (_, index) => (
-            <Card key={index} />
-          ))}
-          <button
-            onClick={handlePopulate}
-            disabled={cardNumber >= maxCards}
-          ></button>
+    <div className="flex border border-dashed p-2">
+      {cards.map((card, index) => (
+        <div
+          key={card.rank && card.suit}
+          onClick={() => onCardClick(card)}
+          className={`relative ${
+            index > 0 ? "ml-[-20]" : "ml-0"
+          } z-${index} cursor-pointer`}
+        >
+          {/* Render your SVG card here */}
+          <Card {...card} />
         </div>
-      )}
-      {isPopulated && (
-        <div className="cards flex flex-1 gap-1 border border-dashed rounded-lg p-4 shadow-lg">
-          {/* Render actual card components based on selectedCards */}
-          {Array.from({ length: cardNumber }, (_, index) => (
-            <Card key={index} /> // Replace with your Card component
-          ))}
-        </div>
-      )}
+      ))}
     </div>
   );
 };
 
 export default PlayerHand;
-
-// Example Card component (replace with your actual card implementation)
-const Card: React.FC = () => {
-  return (
-    <div className="flex">
-      <Skeleton className="h-[40px] w-[35px]" />
-    </div>
-  );
-};
