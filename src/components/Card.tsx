@@ -4,6 +4,7 @@ import React from "react";
 export interface CardProps {
   suit: string;
   rank: string;
+  id: string;
 }
 
 const Card: React.FC<CardProps> = ({ suit, rank }) => {

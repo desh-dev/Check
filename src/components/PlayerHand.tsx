@@ -2,25 +2,31 @@ import React from "react";
 import Card, { CardProps } from "./Card";
 
 interface PlayerHandProps {
-  cards: CardProps[];
+  cards: CardProps[][];
+  playerIndex: number;
   onCardClick: (card: CardProps) => void;
 }
 
-const PlayerHand: React.FC<PlayerHandProps> = ({ cards, onCardClick }) => {
+const PlayerHand: React.FC<PlayerHandProps> = ({
+  cards,
+  playerIndex,
+  onCardClick,
+}) => {
   return (
-    <div className="flex border border-dashed p-2">
-      {cards.map((card, index) => (
-        <div
-          key={card.rank && card.suit}
-          onClick={() => onCardClick(card)}
-          className={`relative ${
-            index > 0 ? "ml-[-20]" : "ml-0"
-          } z-${index} cursor-pointer`}
-        >
-          {/* Render your SVG card here */}
-          <Card {...card} />
-        </div>
-      ))}
+    <div className="flex">
+      {cards[playerIndex] &&
+        cards[playerIndex].map((card, index) => (
+          <div
+            key={card.id}
+            onClick={() => onCardClick(card)}
+            className={`relative ${
+              index > 0 ? "ml-[-20]" : "ml-0"
+            } z-${index} cursor-pointer`}
+          >
+            {/* Render your SVG card here */}
+            <Card {...card} />
+          </div>
+        ))}
     </div>
   );
 };
