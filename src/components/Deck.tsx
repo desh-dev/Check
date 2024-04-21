@@ -1,7 +1,15 @@
-import Card from "./Card";
+import Card, { CardProps } from "./Card";
 
-const Deck = () => {
-  return <Card suit="card" rank="cover" id="deck" />;
+interface IDeckProps {
+  onCardClick: () => void;
+}
+
+const Deck = ({ onCardClick }: IDeckProps) => {
+  return (
+    <div className="cursor-pointer" onClick={() => onCardClick}>
+      <Card suit="card" rank="cover" id="deck" />
+    </div>
+  );
 };
 
 export default Deck;

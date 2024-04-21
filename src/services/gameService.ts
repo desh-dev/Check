@@ -40,7 +40,7 @@ class GameService {
     }
     
 
-   public  distributeCards(deck: CardProps[], numPlayers: number, numCardsPerPlayer: number): { playerHands: CardProps[][], remainingDeck: CardProps[] } {
+   public  distributeCards(deck: CardProps[], numPlayers: number, numCardsPerPlayer: number): { playerHands: CardProps[][], remainingDeck: CardProps[], boardCard: CardProps | undefined} {
     const players: CardProps[][] = [];
     const remainingDeck: CardProps[] = [...deck];
 
@@ -53,11 +53,21 @@ class GameService {
         }
         players.push(playerCards);
     }
-    console.log(remainingDeck)
+    const randomBoardIndex = Math.floor(Math.random() * remainingDeck.length);
+    const boardCard = remainingDeck[randomBoardIndex];
 
-    return { playerHands: players, remainingDeck };
+    return { playerHands: players, remainingDeck, boardCard};
 }    
-
+ public getRandomCard = (deck: CardProps[]): CardProps | undefined => {
+    if (deck.length === 0) {
+      return undefined; // Deck is empty
+    }
+  
+    const randomIndex = Math.floor(Math.random() * deck.length);
+    const randomCard = deck.splice(randomIndex, 1)[0];
+  
+    return randomCard;
+  };
 playCard(boardCard: CardProps) {
         // Logic to play a card based on the board card
     }
