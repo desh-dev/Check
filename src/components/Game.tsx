@@ -25,10 +25,27 @@ const Game = ({ cardNumber }: IGame) => {
   const [newDeck, setNewDeck] = useState(remainingDeck);
   const [newBoardCard, setNewBoardCard] = useState(boardCard);
 
-  const playCard = (card: CardProps) => {
-    setNewBoardCard(card);
-    setNewDeck([...newDeck, card]);
-    console.log(newDeck);
+  const playCard1 = (card: CardProps) => {
+    if (player1Turn) {
+      const updatedPlayer1 = player1.filter((c) => c !== card);
+      setPlayer1(updatedPlayer1);
+      setNewBoardCard(card);
+      setNewDeck([...newDeck, card]);
+      console.log(newDeck);
+      setPlayer1Turn(!player1Turn);
+      setPlayer2Turn(true);
+    }
+  };
+  const playCard2 = (card: CardProps) => {
+    if (player2Turn) {
+      const updatedPlayer2 = player2.filter((c) => c !== card);
+      setPlayer2(updatedPlayer2);
+      setNewBoardCard(card);
+      setNewDeck([...newDeck, card]);
+      console.log(newDeck);
+      setPlayer2Turn(!player2Turn);
+      setPlayer1Turn(true);
+    }
   };
   const drawCard = gameService.getRandomCard(newDeck);
 
@@ -36,10 +53,8 @@ const Game = ({ cardNumber }: IGame) => {
     <>
       <PlayerHand
         playerTurn={true}
-        cards={playerHands}
-        boardCard={newBoardCard as CardProps}
-        playerIndex={0}
-        onCardClick={playCard}
+        playerHand={player1}
+        handleCardClick={playCard1}
       />
       <div className="flex gap-4">
         <Deck onCardClick={() => {}} />
@@ -47,10 +62,8 @@ const Game = ({ cardNumber }: IGame) => {
       </div>
       <PlayerHand
         playerTurn={false}
-        cards={playerHands}
-        boardCard={newBoardCard as CardProps}
-        playerIndex={1}
-        onCardClick={playCard}
+        playerHand={player2}
+        handleCardClick={playCard2}
       />
     </>
   );
