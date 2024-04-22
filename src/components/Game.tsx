@@ -25,6 +25,26 @@ const Game = ({ cardNumber }: IGame) => {
   const [newDeck, setNewDeck] = useState(remainingDeck);
   const [newBoardCard, setNewBoardCard] = useState(boardCard);
 
+  const handleCardFunction = (card: CardProps) => {
+    switch (card.suit) {
+      case "Hearts":
+        // Handle Hearts card function
+        break;
+      case "Diamonds":
+        // Handle Diamonds card function
+        break;
+      case "Clubs":
+        // Handle Clubs card function
+        break;
+      case "Spades":
+        // Handle Spades card function
+        break;
+      default:
+        // Default case
+        break;
+    }
+  };
+
   const playCard1 = (card: CardProps) => {
     if (player1Turn) {
       const updatedPlayer1 = player1.filter((c) => c !== card);
@@ -47,21 +67,34 @@ const Game = ({ cardNumber }: IGame) => {
       setPlayer1Turn(true);
     }
   };
-  const drawCard = gameService.getRandomCard(newDeck);
+  const handleDeckClick = () => {
+    // Generate a random card from the remaining deck
+    const drawnCard = gameService.getRandomCard(newDeck);
 
+    // Add the drawn card to the current player's hand
+    if (player1Turn) {
+      setPlayer1([...(player1 as CardProps[]), drawnCard as CardProps]);
+      setPlayer1Turn(!player1Turn);
+      setPlayer2Turn(true);
+    } else {
+      setPlayer2([...(player2 as CardProps[]), drawnCard as CardProps]);
+      setPlayer2Turn(!player2Turn);
+      setPlayer1Turn(true);
+    }
+  };
   return (
     <>
       <PlayerHand
-        playerTurn={true}
+        playerTurn={player1Turn}
         playerHand={player1}
         handleCardClick={playCard1}
       />
       <div className="flex gap-4">
-        <Deck onCardClick={() => {}} />
+        <Deck onCardClick={handleDeckClick} />
         <BoardCard card={newBoardCard as CardProps} />
       </div>
       <PlayerHand
-        playerTurn={false}
+        playerTurn={player2Turn}
         playerHand={player2}
         handleCardClick={playCard2}
       />
