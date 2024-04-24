@@ -15,6 +15,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 interface SelectCardNumberProps {
   onSubmit: (data: z.infer<typeof FormSchema>) => void;
+  children?: React.ReactNode;
 }
 
 const FormSchema = z.object({
@@ -23,7 +24,7 @@ const FormSchema = z.object({
   }),
 });
 
-const SelectCardNumber = ({ onSubmit }: SelectCardNumberProps) => {
+const SelectCardNumber = ({ onSubmit, children }: SelectCardNumberProps) => {
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
   });
@@ -67,9 +68,12 @@ const SelectCardNumber = ({ onSubmit }: SelectCardNumberProps) => {
             </FormItem>
           )}
         />
-        <Button variant={"secondary"} type="submit">
-          Start
-        </Button>
+        <div className="flex gap-5 flex justify-between">
+          <Button variant="secondary" type="submit">
+            Start
+          </Button>
+          {children}
+        </div>
       </form>
     </Form>
   );

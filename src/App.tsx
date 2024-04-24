@@ -1,9 +1,10 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import Dashboard from "./components/Dashboard";
 import { IGameContextProps } from "./gameContext";
 import GameContext from "./gameContext";
 import ModeSelect from "./components/ModeSelect";
 import VsPlayer from "./components/vsPlayer";
+import Back from "./components/Back";
 
 function App() {
   const [isInRoom, setInRoom] = useState(false);
@@ -27,12 +28,31 @@ function App() {
     vsPlayer,
     setVsPlayer,
   };
+
+  const toggleModeSelect = (setState: React.Dispatch<React.SetStateAction<boolean>>) => {
+    setState(false);
+  };
+
   return (
     <GameContext.Provider value={gameContextValue}>
       <>
         <Dashboard>
           {!multiplayer && !vsAI && !vsPlayer && <ModeSelect />}
-          {vsPlayer && <VsPlayer />}
+          {vsPlayer && (
+            <VsPlayer>
+              <Back toggle={() => toggleModeSelect(setVsPlayer)} state={vsPlayer} setState={setVsPlayer} />
+            </VsPlayer>
+          )}
+          {/* {vsAI && (
+            <VsAI>
+              <Back toggle={() => toggleModeSelect(setVsAI)} state={vsAI} setState={setVsAI} />
+            </VsAI>
+          )}
+          {multiplayer && (
+            <Multiplayer>
+              <Back toggle={() => toggleModeSelect(setMultiplayer)} state={multiplayer} setState={setMultiplayer} />
+            </Multiplayer>
+          )} */}
         </Dashboard>
       </>
     </GameContext.Provider>
