@@ -2,20 +2,6 @@
 
 import { CardProps } from "@/components/Card";
 import { v4 as uuidv4 } from 'uuid';
-interface IGame {
-    players: IPlayer[];
-    //deck: ICard[];
-   // boardCard: ICard | null;
-    currentPlayerIndex: number;
-    numberOfPlayers: number;
-    numberOfCardsPerPlayer: number;
-}
-
-interface IPlayer {
-    name: string;
-   // hand: ICard[];
-    numberOfCards: number;
-}
 
 class GameService {
 
@@ -40,7 +26,7 @@ class GameService {
     }
     
 
-   public  distributeCards(deck: CardProps[], numPlayers: number, numCardsPerPlayer: number): { playerHands: CardProps[][], remainingDeck: CardProps[], boardCard: CardProps | undefined} {
+   public  distributeCards(deck: CardProps[], numPlayers: number, numCardsPerPlayer: number): { playerHands: CardProps[][], remainingDeck: CardProps[] | undefined,  boardCard: CardProps | undefined} {
     const players: CardProps[][] = [];
     const remainingDeck: CardProps[] = [...deck];
 
@@ -54,7 +40,7 @@ class GameService {
         players.push(playerCards);
     }
     const randomBoardIndex = Math.floor(Math.random() * remainingDeck.length);
-    const boardCard = remainingDeck[randomBoardIndex];
+    const boardCard = remainingDeck.splice(randomBoardIndex, 1)[0];
 
     return { playerHands: players, remainingDeck, boardCard};
 }    
@@ -68,25 +54,6 @@ class GameService {
   
     return randomCard;
   };
-playCard(boardCard: CardProps) {
-        // Logic to play a card based on the board card
-    }
-
-    drawCard(deck: CardProps[]) {
-        // Logic to draw a card from the deck
-    }
-
-    startGame() {
-        // Logic to start the game, distribute cards, choose first card for the board
-    }
-
-    playTurn() {
-        // Logic to handle a player's turn
-    }
-
-    determineWinner() {
-        // Logic to determine the winner of the game
-    }
 }
 
 export default new GameService;

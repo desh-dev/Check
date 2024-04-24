@@ -9,13 +9,11 @@ interface BackProps {
 
 const Back = ({ toggle, state, setState }: BackProps) => {
   const handleClick = () => {
-    setState(false);
+    setState(!state);
     toggle();
   };
 
-  return (
-    <Button onClick={handleClick}>Back</Button>
-  );
+  return <Button onClick={handleClick}>Back</Button>;
 };
 
 export default Back;

@@ -1,4 +1,4 @@
-import Card, { CardProps } from "./Card";
+import Card from "./Card";
 
 interface IDeckProps {
   onCardClick: () => void;

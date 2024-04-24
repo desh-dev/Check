@@ -22,7 +22,6 @@ const PlayerHand: React.FC<PlayerHandProps> = ({
               index > 0 ? "ml-[-20]" : "ml-0"
             } z-${index} ${playerTurn ? "cursor-pointer" : ""}`}
           >
-            {/* Render your SVG card here */}
             <Card {...card} />
           </div>
         ))}

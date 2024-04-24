@@ -22,64 +22,68 @@ const Game = ({ cardNumber }: IGame) => {
   const [player2, setPlayer2] = useState(playerHands[1]);
   const [player1Turn, setPlayer1Turn] = useState(true);
   const [player2Turn, setPlayer2Turn] = useState(false);
-  const [newDeck, setNewDeck] = useState(remainingDeck);
+  const [newDeck, setNewDeck] = useState(remainingDeck || []);
   const [newBoardCard, setNewBoardCard] = useState(boardCard);
 
-  const handleCardFunction = (card: CardProps) => {
-    switch (card.suit) {
-      case "Hearts":
-        // Handle Hearts card function
-        break;
-      case "Diamonds":
-        // Handle Diamonds card function
-        break;
-      case "Clubs":
-        // Handle Clubs card function
-        break;
-      case "Spades":
-        // Handle Spades card function
-        break;
+  const handleNewBoardCard = (card: CardProps) => {
+    if (newBoardCard) {
+      const updatedDeck = newDeck.filter((c) => c !== card);
+      setNewDeck(updatedDeck);
+      setNewDeck([...updatedDeck, newBoardCard]);
+    }
+    setNewBoardCard(card);
+  };
+
+  const handleCardFunction = (card: CardProps, player: CardProps[]) => {
+    switch (card.suit && card.rank) {
       default:
-        // Default case
+        if (
+          card.suit === newBoardCard?.suit ||
+          card.rank === newBoardCard?.rank
+        ) {
+          player === player1
+            ? setPlayer1(player1.filter((c) => c !== card))
+            : setPlayer2(player2.filter((c) => c !== card));
+          togglePlayerTurn();
+          handleNewBoardCard(card);
+        }
         break;
     }
   };
-
+  const togglePlayerTurn = () => {
+    if (player1Turn) {
+      setPlayer1Turn(false);
+      setPlayer2Turn(true);
+    } else if (player2Turn) {
+      setPlayer2Turn(false);
+      setPlayer1Turn(true);
+    }
+  };
   const playCard1 = (card: CardProps) => {
     if (player1Turn) {
-      const updatedPlayer1 = player1.filter((c) => c !== card);
-      setPlayer1(updatedPlayer1);
-      setNewBoardCard(card);
-      setNewDeck([...newDeck, card]);
-      console.log(newDeck);
-      setPlayer1Turn(!player1Turn);
-      setPlayer2Turn(true);
+      handleCardFunction(card, player1);
     }
   };
   const playCard2 = (card: CardProps) => {
     if (player2Turn) {
-      const updatedPlayer2 = player2.filter((c) => c !== card);
-      setPlayer2(updatedPlayer2);
-      setNewBoardCard(card);
-      setNewDeck([...newDeck, card]);
-      console.log(newDeck);
-      setPlayer2Turn(!player2Turn);
-      setPlayer1Turn(true);
+      handleCardFunction(card, player2);
     }
   };
   const handleDeckClick = () => {
-    // Generate a random card from the remaining deck
-    const drawnCard = gameService.getRandomCard(newDeck);
+    if (newDeck) {
+      // Generate a random card from the remaining deck
+      const drawnCard = gameService.getRandomCard(newDeck);
 
-    // Add the drawn card to the current player's hand
-    if (player1Turn) {
-      setPlayer1([...(player1 as CardProps[]), drawnCard as CardProps]);
-      setPlayer1Turn(!player1Turn);
-      setPlayer2Turn(true);
-    } else {
-      setPlayer2([...(player2 as CardProps[]), drawnCard as CardProps]);
-      setPlayer2Turn(!player2Turn);
-      setPlayer1Turn(true);
+      // Add the drawn card to the current player's hand
+      if (player1Turn) {
+        setPlayer1([...(player1 as CardProps[]), drawnCard as CardProps]);
+        setPlayer1Turn(!player1Turn);
+        setPlayer2Turn(true);
+      } else {
+        setPlayer2([...(player2 as CardProps[]), drawnCard as CardProps]);
+        setPlayer2Turn(!player2Turn);
+        setPlayer1Turn(true);
+      }
     }
   };
   return (
