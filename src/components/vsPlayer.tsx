@@ -12,7 +12,6 @@ const vsPlayer = ({ children }: Props) => {
   const [cardNumber, setCardNumber] = useState<CardNumber>(null);
   const handleSubmit = (data: any) => {
     setCardNumber(data.type);
-    console.log(cardNumber);
   };
 
   return (
