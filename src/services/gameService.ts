@@ -54,6 +54,25 @@ class GameService {
   
     return randomCard;
   };
+
+  public pickNCards = (n: number, newDeck: CardProps[]) : CardProps[] => {
+    
+    const drawnCardArr: CardProps[] = [];
+
+    for (let i = 0; i < n; i++) {
+        if(newDeck.length === 0) {
+            console.log("Deck is empty");
+            break;
+        }
+      // Generate a random card from the remaining deck
+      const drawnCard = this.getRandomCard(newDeck);
+
+      drawnCardArr.push(drawnCard as CardProps);
+    }
+    return drawnCardArr;
 }
+}
+
+
 
 export default new GameService;

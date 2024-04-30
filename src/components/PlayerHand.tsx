@@ -16,7 +16,7 @@ const PlayerHand: React.FC<PlayerHandProps> = ({
       {playerHand &&
         playerHand.map((card, index) => (
           <div
-            key={card.id}
+            key={index}
             onClick={() => handleCardClick(card)}
             className={`relative ${
               index > 0 ? "ml-[-20]" : "ml-0"

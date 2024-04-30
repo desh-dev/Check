@@ -4,11 +4,14 @@ import BoardCard from "./BoardCard";
 import { CardProps } from "./Card";
 import gameService from "@/services/gameService";
 import { CardNumber } from "./vsPlayer";
-import { useState } from "react";
+import { useRef, useState } from "react";
+import SuitSelector from "./SuitSelector";
+import { Club, Spade, Heart, Diamond } from "lucide-react";
 
 interface IGame {
   cardNumber: CardNumber;
 }
+export type Suits = "Spades" | "Hearts" | "Diamonds" | "Clubs" | "";
 
 const Game = ({ cardNumber }: IGame) => {
   const deck = gameService.generateFullDeck();
@@ -24,6 +27,29 @@ const Game = ({ cardNumber }: IGame) => {
   const [player2Turn, setPlayer2Turn] = useState(false);
   const [newDeck, setNewDeck] = useState(remainingDeck || []);
   const [newBoardCard, setNewBoardCard] = useState(boardCard);
+  const [suitSelector, setSuitSelector] = useState(false);
+  const [suit, setSuit] = useState<Suits>("");
+  const suitPromiseRef = useRef<Promise<Suits> | null>(null);
+
+  const updateSuit = (newSuit: Suits) => {
+    // Resolve the existing promise if any (prevents accumulation)
+    console.log(suit);
+    setSuit(newSuit);
+    suitPromiseRef.current
+      ?.then(() => {
+        setSuit(newSuit);
+        console.log("resolving with: ", newSuit, suitPromiseRef.current);
+      })
+      .catch((err) => console.log(err));
+    suitPromiseRef.current = null; // Reset the reference for next selection
+
+    //Create a new promise for future selections
+    suitPromiseRef.current = new Promise((resolve) => {
+      // Resolve is called when suit selection happens in SuitSelector
+      console.log(" New Promise: ", suitPromiseRef.current);
+      console.log(suit);
+    });
+  };
 
   const handleNewBoardCard = (card: CardProps) => {
     if (newBoardCard) {
@@ -34,10 +60,142 @@ const Game = ({ cardNumber }: IGame) => {
     setNewBoardCard(card);
   };
 
-  const handleCardFunction = (card: CardProps, player: CardProps[]) => {
-    switch (card.suit && card.rank) {
-      default:
+  const handleCardFunction = async (card: CardProps, player: CardProps[]) => {
+    switch (card.rank) {
+      case "jack":
+        setSuitSelector(true);
+        handleNewBoardCard(card);
+        setPlayer1Turn(false);
+        setPlayer2Turn(false);
+        const playerOne = player1;
+        player === player1
+          ? setPlayer1(player1.filter((c) => c !== card))
+          : setPlayer2(player2.filter((c) => c !== card));
+
+        suitPromiseRef.current = new Promise((resolve) => {
+          // Resolve is called when suit selection happens in SuitSelector
+
+          console.log("waiting for suit selection...", suitPromiseRef.current);
+        });
+
+        const chosenSuit: Suits = await suitPromiseRef.current;
+
+        if (player === playerOne) {
+          setPlayer2Turn(true);
+        } else {
+          setPlayer1Turn(true);
+        }
+        setSuitSelector(false);
+        console.log("Chosen Suit:", chosenSuit);
+
+        break;
+
+      case "7":
         if (
+          card.suit === newBoardCard?.suit ||
+          card.rank === newBoardCard?.rank ||
+          newBoardCard?.suit === "joker"
+        )
+          if (newDeck) {
+            const drawnCardArr = gameService.pickNCards(2, newDeck);
+
+            // Add the drawn card to the current player's hand
+            if (player1Turn) {
+              setPlayer2([...(player2 as CardProps[]), ...drawnCardArr]);
+              setPlayer1(player1.filter((c) => c !== card));
+            } else {
+              setPlayer1([...(player1 as CardProps[]), ...drawnCardArr]);
+              setPlayer2(player2.filter((c) => c !== card));
+            }
+
+            handleNewBoardCard(card);
+          }
+        break;
+
+      case "red":
+        if (newDeck) {
+          // Check if the red joker is being played on the diamonds or hearts suit or a 7
+          if (
+            newBoardCard?.suit === "Diamonds" ||
+            newBoardCard?.suit === "Hearts" ||
+            newBoardCard?.rank === "7" ||
+            newBoardCard?.rank === "ace"
+          ) {
+            const drawnCardArr = gameService.pickNCards(4, newDeck);
+
+            handleNewBoardCard(card);
+
+            // Add the drawn cards to the opponent's hand
+            if (player1Turn) {
+              setPlayer2([...(player2 as CardProps[]), ...drawnCardArr]);
+              setPlayer1(player1.filter((c) => c !== card));
+            } else {
+              setPlayer1([...(player1 as CardProps[]), ...drawnCardArr]);
+              setPlayer2(player2.filter((c) => c !== card));
+            }
+          }
+        }
+        break;
+      case "black":
+        // Check if the black joker is being played on the Spades or Clubs suit or a 7
+        if (
+          newBoardCard?.suit === "Spades" ||
+          newBoardCard?.suit === "Clubs" ||
+          newBoardCard?.rank === "7" ||
+          newBoardCard?.rank === "ace"
+        ) {
+          handleNewBoardCard(card);
+          const drawnCardArr = gameService.pickNCards(4, newDeck);
+
+          // Add the drawn cards to the opponent's hand
+          if (player1Turn) {
+            setPlayer2([...(player2 as CardProps[]), ...drawnCardArr]);
+            setPlayer1(player1.filter((c) => c !== card));
+          } else {
+            setPlayer1([...(player1 as CardProps[]), ...drawnCardArr]);
+            setPlayer2(player2.filter((c) => c !== card));
+          }
+        }
+
+        break;
+
+      case "ace":
+        if (
+          card.suit === newBoardCard?.suit ||
+          card.rank === newBoardCard?.rank ||
+          newBoardCard?.suit === "joker"
+        ) {
+          handleNewBoardCard(card);
+          player === player1
+            ? setPlayer1(player1.filter((c) => c !== card))
+            : setPlayer2(player2.filter((c) => c !== card));
+        }
+
+        break;
+
+      default:
+        if (suit && suit === card.suit) {
+          player === player1
+            ? setPlayer1(player1.filter((c) => c !== card))
+            : setPlayer2(player2.filter((c) => c !== card));
+          togglePlayerTurn();
+          handleNewBoardCard(card);
+          setSuit("");
+          setSuitSelector(false);
+        } else if (
+          newBoardCard?.rank === "jack" ||
+          (newBoardCard?.suit === "joker" &&
+            newBoardCard?.rank === "black" &&
+            card.suit === "Clubs") ||
+          (newBoardCard?.suit === "joker" &&
+            newBoardCard?.rank === "black" &&
+            card.suit === "Spades") ||
+          (newBoardCard?.suit === "joker" &&
+            newBoardCard?.rank === "red" &&
+            card.suit === "Hearts") ||
+          (newBoardCard?.suit === "joker" &&
+            newBoardCard?.rank === "red" &&
+            card.suit === "Diamonds") ||
           card.suit === newBoardCard?.suit ||
           card.rank === newBoardCard?.rank
         ) {
@@ -46,6 +204,7 @@ const Game = ({ cardNumber }: IGame) => {
             : setPlayer2(player2.filter((c) => c !== card));
           togglePlayerTurn();
           handleNewBoardCard(card);
+          console.log(newDeck);
         }
         break;
     }
@@ -86,6 +245,7 @@ const Game = ({ cardNumber }: IGame) => {
       }
     }
   };
+
   return (
     <>
       <PlayerHand
@@ -95,7 +255,25 @@ const Game = ({ cardNumber }: IGame) => {
       />
       <div className="flex gap-4">
         <Deck onCardClick={handleDeckClick} />
-        <BoardCard card={newBoardCard as CardProps} />
+        <div className="flex flex-col gap-2 ml-8">
+          <BoardCard card={newBoardCard as CardProps} />
+          {suit && (
+            <div className="flex bg-muted/40 rounded-md justify-center">
+              {suit === "Spades" ? (
+                <Spade />
+              ) : suit === "Hearts" ? (
+                <Heart />
+              ) : suit === "Diamonds" ? (
+                <Diamond />
+              ) : (
+                <Club />
+              )}
+            </div>
+          )}
+        </div>
+        <div className="ml-6">
+          {suitSelector && <SuitSelector updateSuit={updateSuit} />}
+        </div>
       </div>
       <PlayerHand
         playerTurn={player2Turn}
