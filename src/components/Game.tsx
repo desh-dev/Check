@@ -29,26 +29,24 @@ const Game = ({ cardNumber }: IGame) => {
   const [newBoardCard, setNewBoardCard] = useState(boardCard);
   const [suitSelector, setSuitSelector] = useState(false);
   const [suit, setSuit] = useState<Suits>("");
-  const suitPromiseRef = useRef<Promise<Suits> | null>(null);
-
+  const suitPromiseRef = useRef<{ resolve: (value: Suits) => void } | null>(
+    null
+  );
   const updateSuit = (newSuit: Suits) => {
     // Resolve the existing promise if any (prevents accumulation)
     console.log(suit);
     setSuit(newSuit);
-    suitPromiseRef.current
-      ?.then(() => {
-        setSuit(newSuit);
-        console.log("resolving with: ", newSuit, suitPromiseRef.current);
-      })
-      .catch((err) => console.log(err));
-    suitPromiseRef.current = null; // Reset the reference for next selection
+    suitPromiseRef.current?.resolve(newSuit);
+
+    suitPromiseRef.current = null;
 
     //Create a new promise for future selections
-    suitPromiseRef.current = new Promise((resolve) => {
-      // Resolve is called when suit selection happens in SuitSelector
-      console.log(" New Promise: ", suitPromiseRef.current);
-      console.log(suit);
-    });
+    // suitPromiseRef.current = new Promise((resolve) => {
+    //   // Resolve is called when suit selection happens in SuitSelector
+
+    //   console.log(" New Promise: ", suitPromiseRef.current);
+    //   console.log(suit);
+    // });
   };
 
   const handleNewBoardCard = (card: CardProps) => {
@@ -72,29 +70,26 @@ const Game = ({ cardNumber }: IGame) => {
           ? setPlayer1(player1.filter((c) => c !== card))
           : setPlayer2(player2.filter((c) => c !== card));
 
-        suitPromiseRef.current = new Promise((resolve) => {
-          // Resolve is called when suit selection happens in SuitSelector
-
-          console.log("waiting for suit selection...", suitPromiseRef.current);
+        await new Promise((resolve) => {
+          suitPromiseRef.current = { resolve };
+        }).then(() => {
+          if (player === playerOne) {
+            setPlayer2Turn(true);
+          } else {
+            setPlayer1Turn(true);
+          }
+          setSuitSelector(false);
         });
-
-        const chosenSuit: Suits = await suitPromiseRef.current;
-
-        if (player === playerOne) {
-          setPlayer2Turn(true);
-        } else {
-          setPlayer1Turn(true);
-        }
-        setSuitSelector(false);
-        console.log("Chosen Suit:", chosenSuit);
 
         break;
 
       case "7":
         if (
-          card.suit === newBoardCard?.suit ||
-          card.rank === newBoardCard?.rank ||
-          newBoardCard?.suit === "joker"
+          (!suit &&
+            (card.suit === newBoardCard?.suit ||
+              card.rank === newBoardCard?.rank ||
+              newBoardCard?.suit === "joker")) ||
+          (suit && card.suit === suit)
         )
           if (newDeck) {
             const drawnCardArr = gameService.pickNCards(2, newDeck);
@@ -109,6 +104,7 @@ const Game = ({ cardNumber }: IGame) => {
             }
 
             handleNewBoardCard(card);
+            setSuit("");
           }
         break;
 
@@ -116,14 +112,18 @@ const Game = ({ cardNumber }: IGame) => {
         if (newDeck) {
           // Check if the red joker is being played on the diamonds or hearts suit or a 7
           if (
-            newBoardCard?.suit === "Diamonds" ||
-            newBoardCard?.suit === "Hearts" ||
-            newBoardCard?.rank === "7" ||
-            newBoardCard?.rank === "ace"
+            (!suit &&
+              (newBoardCard?.suit === "Diamonds" ||
+                newBoardCard?.suit === "Hearts" ||
+                newBoardCard?.rank === "7" ||
+                newBoardCard?.rank === "ace")) ||
+            suit === "Diamonds" ||
+            suit === "Hearts"
           ) {
             const drawnCardArr = gameService.pickNCards(4, newDeck);
 
             handleNewBoardCard(card);
+            setSuit("");
 
             // Add the drawn cards to the opponent's hand
             if (player1Turn) {
@@ -139,12 +139,16 @@ const Game = ({ cardNumber }: IGame) => {
       case "black":
         // Check if the black joker is being played on the Spades or Clubs suit or a 7
         if (
-          newBoardCard?.suit === "Spades" ||
-          newBoardCard?.suit === "Clubs" ||
-          newBoardCard?.rank === "7" ||
-          newBoardCard?.rank === "ace"
+          (!suit &&
+            (newBoardCard?.suit === "Spades" ||
+              newBoardCard?.suit === "Clubs" ||
+              newBoardCard?.rank === "7" ||
+              newBoardCard?.rank === "ace")) ||
+          suit === "Spades" ||
+          suit === "Clubs"
         ) {
           handleNewBoardCard(card);
+          setSuit("");
           const drawnCardArr = gameService.pickNCards(4, newDeck);
 
           // Add the drawn cards to the opponent's hand
@@ -161,11 +165,14 @@ const Game = ({ cardNumber }: IGame) => {
 
       case "ace":
         if (
-          card.suit === newBoardCard?.suit ||
-          card.rank === newBoardCard?.rank ||
-          newBoardCard?.suit === "joker"
+          (!suit &&
+            (card.suit === newBoardCard?.suit ||
+              card.rank === newBoardCard?.rank ||
+              newBoardCard?.suit === "joker")) ||
+          card.suit === suit
         ) {
           handleNewBoardCard(card);
+          setSuit("");
           player === player1
             ? setPlayer1(player1.filter((c) => c !== card))
             : setPlayer2(player2.filter((c) => c !== card));
@@ -183,21 +190,22 @@ const Game = ({ cardNumber }: IGame) => {
           setSuit("");
           setSuitSelector(false);
         } else if (
-          newBoardCard?.rank === "jack" ||
-          (newBoardCard?.suit === "joker" &&
-            newBoardCard?.rank === "black" &&
-            card.suit === "Clubs") ||
-          (newBoardCard?.suit === "joker" &&
-            newBoardCard?.rank === "black" &&
-            card.suit === "Spades") ||
-          (newBoardCard?.suit === "joker" &&
-            newBoardCard?.rank === "red" &&
-            card.suit === "Hearts") ||
-          (newBoardCard?.suit === "joker" &&
-            newBoardCard?.rank === "red" &&
-            card.suit === "Diamonds") ||
-          card.suit === newBoardCard?.suit ||
-          card.rank === newBoardCard?.rank
+          !suit &&
+          (newBoardCard?.rank === "jack" ||
+            (newBoardCard?.suit === "joker" &&
+              newBoardCard?.rank === "black" &&
+              card.suit === "Clubs") ||
+            (newBoardCard?.suit === "joker" &&
+              newBoardCard?.rank === "black" &&
+              card.suit === "Spades") ||
+            (newBoardCard?.suit === "joker" &&
+              newBoardCard?.rank === "red" &&
+              card.suit === "Hearts") ||
+            (newBoardCard?.suit === "joker" &&
+              newBoardCard?.rank === "red" &&
+              card.suit === "Diamonds") ||
+            card.suit === newBoardCard?.suit ||
+            card.rank === newBoardCard?.rank)
         ) {
           player === player1
             ? setPlayer1(player1.filter((c) => c !== card))
