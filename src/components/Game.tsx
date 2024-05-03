@@ -4,9 +4,12 @@ import BoardCard from "./BoardCard";
 import { CardProps } from "./Card";
 import gameService from "@/services/gameService";
 import { CardNumber } from "./vsPlayer";
-import { useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import SuitSelector from "./SuitSelector";
 import { Club, Spade, Heart, Diamond } from "lucide-react";
+import { Button } from "./ui/button";
+import gameContext from "@/gameContext";
+import DialogBox from "./DialogBox";
 
 interface IGame {
   cardNumber: CardNumber;
@@ -25,6 +28,7 @@ const Game = ({ cardNumber }: IGame) => {
   const [player2, setPlayer2] = useState(playerHands[1]);
   const [player1Turn, setPlayer1Turn] = useState(true);
   const [player2Turn, setPlayer2Turn] = useState(false);
+  const [gameWon, setGameWon] = useState(false);
   const [newDeck, setNewDeck] = useState(remainingDeck || []);
   const [newBoardCard, setNewBoardCard] = useState(boardCard);
   const [suitSelector, setSuitSelector] = useState(false);
@@ -32,6 +36,8 @@ const Game = ({ cardNumber }: IGame) => {
   const suitPromiseRef = useRef<{ resolve: (value: Suits) => void } | null>(
     null
   );
+
+  const { setVsPlayer, setCardNumber } = useContext(gameContext);
   const updateSuit = (newSuit: Suits) => {
     // Resolve the existing promise if any (prevents accumulation)
     console.log(suit);
@@ -39,14 +45,6 @@ const Game = ({ cardNumber }: IGame) => {
     suitPromiseRef.current?.resolve(newSuit);
 
     suitPromiseRef.current = null;
-
-    //Create a new promise for future selections
-    // suitPromiseRef.current = new Promise((resolve) => {
-    //   // Resolve is called when suit selection happens in SuitSelector
-
-    //   console.log(" New Promise: ", suitPromiseRef.current);
-    //   console.log(suit);
-    // });
   };
 
   const handleNewBoardCard = (card: CardProps) => {
@@ -254,6 +252,23 @@ const Game = ({ cardNumber }: IGame) => {
     }
   };
 
+  // Call resetGame function when needed
+  const handleGameWin = () => {
+    if (player1.length === 1 || player2.length === 1) alert("Check");
+    if (player1.length === 0 && player2Turn) {
+      alert("Player 1 Wins");
+      setGameWon(true);
+    }
+    if (player2.length === 0 && player1Turn) {
+      alert("Player 2 Wins");
+      setGameWon(true);
+    }
+  };
+
+  useEffect(() => {
+    handleGameWin();
+  }, [player1, player2]);
+
   return (
     <>
       <PlayerHand
@@ -288,6 +303,29 @@ const Game = ({ cardNumber }: IGame) => {
         playerHand={player2}
         handleCardClick={playCard2}
       />
+      {gameWon && (
+        <DialogBox isOpen={gameWon}>
+          <div className="flex gap-10 flex-col pt-10 pb-10 rounded-md">
+            <Button
+              className="text-xl p-4"
+              variant={"secondary"}
+              onClick={() => {
+                setVsPlayer(false);
+                setCardNumber(null);
+              }}
+            >
+              Back to Main Menu
+            </Button>
+            <Button
+              className="text-xl p-4"
+              variant={"secondary"}
+              onClick={() => setCardNumber(null)}
+            >
+              Play Again
+            </Button>
+          </div>
+        </DialogBox>
+      )}
     </>
   );
 };

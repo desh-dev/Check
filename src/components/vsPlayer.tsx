@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useContext } from "react";
 import SelectCardNumber from "./selectCardNumber";
 import Game from "./Game";
+import gameContext from "@/gameContext";
 
 export type CardNumber = number | null;
 
@@ -9,7 +10,7 @@ interface Props {
 }
 
 const vsPlayer = ({ children }: Props) => {
-  const [cardNumber, setCardNumber] = useState<CardNumber>(null);
+  const { cardNumber, setCardNumber } = useContext(gameContext);
   const handleSubmit = (data: any) => {
     setCardNumber(data.type);
   };

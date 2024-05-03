@@ -1,5 +1,4 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Button } from "./ui/button";
 
 interface DialogProps {
   isOpen: boolean;
@@ -58,14 +57,14 @@ const Dialog: React.FC<DialogProps> = ({
         isVisible ? "block" : "hidden"
       } `} // Apply Tailwind classes
     >
-      <div className="dialog-content bg-white rounded-lg shadow-lg p-4 w-full max-w-md">
+      <div className="flex flex-col bg-white rounded-lg shadow-lg p-4 w-full max-w-md">
         {title && <h3>{title}</h3>}
-        <Button
+        {/* <Button
           className="font-bold text-center items-center"
           onClick={handleClose}
         >
           Start
-        </Button>
+        </Button> */}
         <div className="dialog-body">{children}</div>
       </div>
     </div>

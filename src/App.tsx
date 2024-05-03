@@ -3,13 +3,14 @@ import Dashboard from "./components/Dashboard";
 import { IGameContextProps } from "./gameContext";
 import GameContext from "./gameContext";
 import ModeSelect from "./components/ModeSelect";
-import VsPlayer from "./components/vsPlayer";
+import VsPlayer, { CardNumber } from "./components/vsPlayer";
 import Back from "./components/Back";
 
 function App() {
   const [isInRoom, setInRoom] = useState(false);
   const [isPlayerTurn, setPlayerTurn] = useState(false);
   const [isGameStarted, setGameStarted] = useState(false);
+  const [cardNumber, setCardNumber] = useState<CardNumber>(null);
   const [multiplayer, setMultiplayer] = useState(false);
   const [vsAI, setVsAI] = useState(false);
   const [vsPlayer, setVsPlayer] = useState(false);
@@ -21,6 +22,8 @@ function App() {
     setPlayerTurn,
     isGameStarted,
     setGameStarted,
+    cardNumber,
+    setCardNumber,
     multiplayer,
     setMultiplayer,
     vsAI,
@@ -29,7 +32,9 @@ function App() {
     setVsPlayer,
   };
 
-  const toggleModeSelect = (setState: React.Dispatch<React.SetStateAction<boolean>>) => {
+  const toggleModeSelect = (
+    setState: React.Dispatch<React.SetStateAction<boolean>>
+  ) => {
     setState(false);
   };
 
@@ -40,7 +45,11 @@ function App() {
           {!multiplayer && !vsAI && !vsPlayer && <ModeSelect />}
           {vsPlayer && (
             <VsPlayer>
-              <Back toggle={() => toggleModeSelect(setVsPlayer)} state={vsPlayer} setState={setVsPlayer} />
+              <Back
+                toggle={() => toggleModeSelect(setVsPlayer)}
+                state={vsPlayer}
+                setState={setVsPlayer}
+              />
             </VsPlayer>
           )}
           {/* {vsAI && (

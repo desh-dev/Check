@@ -8,6 +8,8 @@ export interface IGameContextProps {
   isGameStarted: boolean;
   setGameStarted: (started: boolean) => void;
   multiplayer: boolean;
+  cardNumber: number | null;
+  setCardNumber: (cardNumber: number | null) => void;
   setMultiplayer: (multiplayer: boolean) => void;
   vsAI: boolean;
   setVsAI: (vsAI: boolean) => void;
@@ -22,6 +24,8 @@ const defaultState: IGameContextProps = {
   setPlayerTurn: () => {},
   isGameStarted: false,
   setGameStarted: () => {},
+  cardNumber: null,
+  setCardNumber: () => {},
   multiplayer: false,
   setMultiplayer: () => {},
   vsAI: false,
