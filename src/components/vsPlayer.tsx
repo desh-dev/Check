@@ -1,6 +1,6 @@
 import { useContext } from "react";
 import SelectCardNumber from "./selectCardNumber";
-import Game from "./Game";
+import Game from "./practice/Game";
 import gameContext from "@/gameContext";
 
 export type CardNumber = number | null;

@@ -1,7 +1,7 @@
 import Card, { CardProps } from "./Card";
 
 interface PlayerHandProps {
-  playerTurn: boolean;
+  playerTurn?: boolean;
   playerHand: CardProps[];
   handleCardClick: (card: CardProps) => void;
 }

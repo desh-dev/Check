@@ -7,7 +7,7 @@ interface BackProps {
   setState: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-const Back = ({ toggle, state, setState }: BackProps) => {
+const BackButton = ({ toggle, state, setState }: BackProps) => {
   const handleClick = () => {
     setState(!state);
     toggle();
@@ -16,4 +16,4 @@ const Back = ({ toggle, state, setState }: BackProps) => {
   return <Button onClick={handleClick}>Back</Button>;
 };
 
-export default Back;
+export default BackButton;

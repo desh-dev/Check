@@ -4,7 +4,7 @@ import { IGameContextProps } from "./gameContext";
 import GameContext from "./gameContext";
 import ModeSelect from "./components/ModeSelect";
 import VsPlayer, { CardNumber } from "./components/vsPlayer";
-import Back from "./components/Back";
+import BackButton from "./components/BackButton";
 
 function App() {
   const [isInRoom, setInRoom] = useState(false);
@@ -45,7 +45,7 @@ function App() {
           {!multiplayer && !vsAI && !vsPlayer && <ModeSelect />}
           {vsPlayer && (
             <VsPlayer>
-              <Back
+              <BackButton
                 toggle={() => toggleModeSelect(setVsPlayer)}
                 state={vsPlayer}
                 setState={setVsPlayer}

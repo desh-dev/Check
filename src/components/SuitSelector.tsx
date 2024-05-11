@@ -1,5 +1,5 @@
 import { Button } from "./ui/button";
-import { Suits } from "./Game";
+import { Suits } from "./practice/Game";
 
 interface Props {
   updateSuit: (newSuit: Suits) => void;

@@ -1,15 +1,15 @@
-import PlayerHand from "./PlayerHand";
-import Deck from "./Deck";
-import BoardCard from "./BoardCard";
-import { CardProps } from "./Card";
+import PlayerHand from "../PlayerHand";
+import Deck from "../Deck";
+import BoardCard from "../BoardCard";
+import { CardProps } from "../Card";
 import gameService from "@/services/gameService";
-import { CardNumber } from "./vsPlayer";
+import { CardNumber } from "../vsPlayer";
 import { useContext, useEffect, useRef, useState } from "react";
-import SuitSelector from "./SuitSelector";
+import SuitSelector from "../SuitSelector";
 import { Club, Spade, Heart, Diamond } from "lucide-react";
-import { Button } from "./ui/button";
+import { Button } from "../ui/button";
 import gameContext from "@/gameContext";
-import DialogBox from "./DialogBox";
+import DialogBox from "../DialogBox";
 
 interface IGame {
   cardNumber: CardNumber;
@@ -254,12 +254,11 @@ const Game = ({ cardNumber }: IGame) => {
 
   // Call resetGame function when needed
   const handleGameWin = () => {
-    if (player1.length === 1 || player2.length === 1) alert("Check");
-    if (player1.length === 0 && player2Turn) {
+    if (player1.length === 0) {
       alert("Player 1 Wins");
       setGameWon(true);
     }
-    if (player2.length === 0 && player1Turn) {
+    if (player2.length === 0) {
       alert("Player 2 Wins");
       setGameWon(true);
     }
