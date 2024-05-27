@@ -3,8 +3,8 @@ import React from "react";
 export interface IGameContextProps {
   isInRoom: boolean;
   setInRoom: (inRoom: boolean) => void;
-  isPlayerTurn: boolean;
-  setPlayerTurn: (turn: boolean) => void;
+  playerName: string;
+  setPlayerName: (playerName: string) => void;
   isGameStarted: boolean;
   setGameStarted: (started: boolean) => void;
   multiplayer: boolean;
@@ -13,15 +13,15 @@ export interface IGameContextProps {
   setMultiplayer: (multiplayer: boolean) => void;
   vsAI: boolean;
   setVsAI: (vsAI: boolean) => void;
-  vsPlayer: boolean;
-  setVsPlayer: (vsPlayer: boolean) => void;
+  practice: boolean;
+  setPractice: (practice: boolean) => void;
 }
 
 const defaultState: IGameContextProps = {
   isInRoom: false,
   setInRoom: () => {},
-  isPlayerTurn: false,
-  setPlayerTurn: () => {},
+  playerName: "",
+  setPlayerName: () => {},
   isGameStarted: false,
   setGameStarted: () => {},
   cardNumber: null,
@@ -30,8 +30,8 @@ const defaultState: IGameContextProps = {
   setMultiplayer: () => {},
   vsAI: false,
   setVsAI: () => {},
-  vsPlayer: false,
-  setVsPlayer: () => {},
+  practice: false,
+  setPractice: () => {},
 };
 
 export default React.createContext(defaultState);

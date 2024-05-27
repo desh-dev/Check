@@ -9,10 +9,10 @@ interface Props {
   children?: React.ReactNode;
 }
 
-const vsPlayer = ({ children }: Props) => {
+const Practice = ({ children }: Props) => {
   const { cardNumber, setCardNumber } = useContext(gameContext);
   const handleSubmit = (data: any) => {
-    setCardNumber(data.type);
+    setCardNumber(data.cardNumber);
   };
 
   return (
@@ -27,4 +27,4 @@ const vsPlayer = ({ children }: Props) => {
   );
 };
 
-export default vsPlayer;
+export default Practice;

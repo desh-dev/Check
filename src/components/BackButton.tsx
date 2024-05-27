@@ -2,18 +2,38 @@ import React from "react";
 import { Button } from "./ui/button";
 
 interface BackProps {
-  toggle: () => void;
-  state: boolean;
-  setState: React.Dispatch<React.SetStateAction<boolean>>;
+  children: React.ReactNode;
+  buttonVariant?:
+    | "default"
+    | "destructive"
+    | "outline"
+    | "secondary"
+    | "ghost"
+    | "link"
+    | null
+    | undefined;
+  toggle?: () => void;
+  state: any;
+  setState: React.Dispatch<React.SetStateAction<any>>;
 }
 
-const BackButton = ({ toggle, state, setState }: BackProps) => {
+const BackButton = ({
+  toggle,
+  state,
+  setState,
+  children,
+  buttonVariant,
+}: BackProps) => {
   const handleClick = () => {
     setState(!state);
-    toggle();
+    toggle?.();
   };
 
-  return <Button onClick={handleClick}>Back</Button>;
+  return (
+    <Button variant={buttonVariant} onClick={handleClick}>
+      {children}
+    </Button>
+  );
 };
 
 export default BackButton;

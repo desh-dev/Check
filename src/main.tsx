@@ -3,11 +3,21 @@ import ReactDOM from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import Multiplayer from "./components/Multiplayer.tsx";
+import VsFriend from "./components/VsFriend.tsx";
 
 const router = createBrowserRouter([
   {
     path: "/",
     element: <App />,
+  },
+  {
+    path: "/multiplayer",
+    element: <Multiplayer />,
+  },
+  {
+    path: "/vsFriend",
+    element: <VsFriend />,
   },
 ]);
 

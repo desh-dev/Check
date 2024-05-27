@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import Dashboard from "./components/Dashboard";
 import { IGameContextProps } from "./gameContext";
 import GameContext from "./gameContext";
 import ModeSelect from "./components/ModeSelect";
-import VsPlayer, { CardNumber } from "./components/vsPlayer";
+import { CardNumber } from "./components/Practice";
 import BackButton from "./components/BackButton";
+import Practice from "./components/Practice.tsx";
 
 function App() {
   const [isInRoom, setInRoom] = useState(false);
@@ -13,13 +14,13 @@ function App() {
   const [cardNumber, setCardNumber] = useState<CardNumber>(null);
   const [multiplayer, setMultiplayer] = useState(false);
   const [vsAI, setVsAI] = useState(false);
-  const [vsPlayer, setVsPlayer] = useState(false);
+  const [practice, setPractice] = useState(false);
 
   const gameContextValue: IGameContextProps = {
     isInRoom,
     setInRoom,
-    isPlayerTurn,
-    setPlayerTurn,
+    playerName: "",
+    setPlayerName: () => {},
     isGameStarted,
     setGameStarted,
     cardNumber,
@@ -28,39 +29,26 @@ function App() {
     setMultiplayer,
     vsAI,
     setVsAI,
-    vsPlayer,
-    setVsPlayer,
-  };
-
-  const toggleModeSelect = (
-    setState: React.Dispatch<React.SetStateAction<boolean>>
-  ) => {
-    setState(false);
+    practice,
+    setPractice,
   };
 
   return (
     <GameContext.Provider value={gameContextValue}>
       <>
         <Dashboard>
-          {!multiplayer && !vsAI && !vsPlayer && <ModeSelect />}
-          {vsPlayer && (
-            <VsPlayer>
-              <BackButton
-                toggle={() => toggleModeSelect(setVsPlayer)}
-                state={vsPlayer}
-                setState={setVsPlayer}
-              />
-            </VsPlayer>
+          {!vsAI && !practice && <ModeSelect />}
+          {practice && (
+            <Practice>
+              <BackButton state={practice} setState={setPractice}>
+                Back
+              </BackButton>
+            </Practice>
           )}
           {/* {vsAI && (
             <VsAI>
               <Back toggle={() => toggleModeSelect(setVsAI)} state={vsAI} setState={setVsAI} />
             </VsAI>
-          )}
-          {multiplayer && (
-            <Multiplayer>
-              <Back toggle={() => toggleModeSelect(setMultiplayer)} state={multiplayer} setState={setMultiplayer} />
-            </Multiplayer>
           )} */}
         </Dashboard>
       </>

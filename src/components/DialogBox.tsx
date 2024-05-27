@@ -7,12 +7,7 @@ interface DialogProps {
   title?: string;
 }
 
-const Dialog: React.FC<DialogProps> = ({
-  isOpen,
-  onClose,
-  children,
-  title,
-}) => {
+const Dialog = ({ isOpen, onClose, children, title }: DialogProps) => {
   const [isVisible, setIsVisible] = useState(isOpen); // Manage visibility state
   const dialogRef = useRef<HTMLDivElement>(null); // Ref to access the dialog element
 
@@ -52,13 +47,14 @@ const Dialog: React.FC<DialogProps> = ({
 
   return (
     <div
-      ref={dialogRef}
       className={`dialog fixed top-0 left-0 w-full h-full overflow-auto bg-gray-900 bg-opacity-50 z-50 flex justify-center items-center ${
         isVisible ? "block" : "hidden"
       } `} // Apply Tailwind classes
     >
-      <div className="flex flex-col bg-white rounded-lg shadow-lg p-4 w-full max-w-md">
-        {title && <h3>{title}</h3>}
+      <div className="flex flex-col w-auto bg-white rounded-lg p-4 shadow-lg justify-center">
+        <div className="w-full flex justify-center pt-1">
+          {title && <h1 className="text-xl font-bold">{title}</h1>}
+        </div>
         {/* <Button
           className="font-bold text-center items-center"
           onClick={handleClose}

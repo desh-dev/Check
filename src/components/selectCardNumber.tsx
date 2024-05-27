@@ -19,9 +19,11 @@ interface SelectCardNumberProps {
 }
 
 const FormSchema = z.object({
-  type: z.string().refine((value) => value !== null && value !== undefined, {
-    message: "Card number is required",
-  }),
+  cardNumber: z
+    .string()
+    .refine((value) => value !== null && value !== undefined, {
+      message: "Card number is required",
+    }),
 });
 
 const SelectCardNumber = ({ onSubmit, children }: SelectCardNumberProps) => {
@@ -31,10 +33,10 @@ const SelectCardNumber = ({ onSubmit, children }: SelectCardNumberProps) => {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="w-2/3 space-y-6">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="w-2/3 space-y-5">
         <FormField
           control={form.control}
-          name="type"
+          name="cardNumber"
           render={({ field }) => (
             <FormItem className="space-y-3">
               <FormLabel>Select card number</FormLabel>

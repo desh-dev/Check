@@ -3,20 +3,21 @@ import Deck from "../Deck";
 import BoardCard from "../BoardCard";
 import { CardProps } from "../Card";
 import gameService from "@/services/gameService";
-import { CardNumber } from "../vsPlayer";
+import { CardNumber } from "../Practice";
 import { useContext, useEffect, useRef, useState } from "react";
 import SuitSelector from "../SuitSelector";
 import { Club, Spade, Heart, Diamond } from "lucide-react";
 import { Button } from "../ui/button";
 import gameContext from "@/gameContext";
 import DialogBox from "../DialogBox";
+import BackButton from "../BackButton";
 
-interface IGame {
+interface IGamePractice {
   cardNumber: CardNumber;
 }
 export type Suits = "Spades" | "Hearts" | "Diamonds" | "Clubs" | "";
 
-const Game = ({ cardNumber }: IGame) => {
+const Game = ({ cardNumber }: IGamePractice) => {
   const deck = gameService.generateFullDeck();
 
   const { playerHands, boardCard, remainingDeck } = gameService.distributeCards(
@@ -37,10 +38,10 @@ const Game = ({ cardNumber }: IGame) => {
     null
   );
 
-  const { setVsPlayer, setCardNumber } = useContext(gameContext);
+  const { setPractice, setCardNumber } = useContext(gameContext);
   const updateSuit = (newSuit: Suits) => {
+    // sets suit when jcommand is played
     // Resolve the existing promise if any (prevents accumulation)
-    console.log(suit);
     setSuit(newSuit);
     suitPromiseRef.current?.resolve(newSuit);
 
@@ -48,10 +49,11 @@ const Game = ({ cardNumber }: IGame) => {
   };
 
   const handleNewBoardCard = (card: CardProps) => {
+    // removes played card from deck
+    // pushes old board card to deck
+    // sets played card as new board card
     if (newBoardCard) {
-      const updatedDeck = newDeck.filter((c) => c !== card);
-      setNewDeck(updatedDeck);
-      setNewDeck([...updatedDeck, newBoardCard]);
+      setNewDeck((prevDeck) => [...prevDeck, newBoardCard]);
     }
     setNewBoardCard(card);
   };
@@ -90,19 +92,22 @@ const Game = ({ cardNumber }: IGame) => {
           (suit && card.suit === suit)
         )
           if (newDeck) {
-            const drawnCardArr = gameService.pickNCards(2, newDeck);
+            const { drawnCards, remainingDeck } = gameService.pickNCards(
+              2,
+              newDeck
+            );
+            setNewDeck(remainingDeck);
+            handleNewBoardCard(card);
+            setSuit("");
 
             // Add the drawn card to the current player's hand
             if (player1Turn) {
-              setPlayer2([...(player2 as CardProps[]), ...drawnCardArr]);
+              setPlayer2([...(player2 as CardProps[]), ...drawnCards]);
               setPlayer1(player1.filter((c) => c !== card));
             } else {
-              setPlayer1([...(player1 as CardProps[]), ...drawnCardArr]);
+              setPlayer1([...(player1 as CardProps[]), ...drawnCards]);
               setPlayer2(player2.filter((c) => c !== card));
             }
-
-            handleNewBoardCard(card);
-            setSuit("");
           }
         break;
 
@@ -118,17 +123,20 @@ const Game = ({ cardNumber }: IGame) => {
             suit === "Diamonds" ||
             suit === "Hearts"
           ) {
-            const drawnCardArr = gameService.pickNCards(4, newDeck);
-
+            const { drawnCards, remainingDeck } = gameService.pickNCards(
+              4,
+              newDeck
+            );
+            setNewDeck(remainingDeck);
             handleNewBoardCard(card);
             setSuit("");
 
             // Add the drawn cards to the opponent's hand
             if (player1Turn) {
-              setPlayer2([...(player2 as CardProps[]), ...drawnCardArr]);
+              setPlayer2([...(player2 as CardProps[]), ...drawnCards]);
               setPlayer1(player1.filter((c) => c !== card));
             } else {
-              setPlayer1([...(player1 as CardProps[]), ...drawnCardArr]);
+              setPlayer1([...(player1 as CardProps[]), ...drawnCards]);
               setPlayer2(player2.filter((c) => c !== card));
             }
           }
@@ -145,16 +153,20 @@ const Game = ({ cardNumber }: IGame) => {
           suit === "Spades" ||
           suit === "Clubs"
         ) {
+          const { drawnCards, remainingDeck } = gameService.pickNCards(
+            4,
+            newDeck
+          );
+          setNewDeck(remainingDeck);
           handleNewBoardCard(card);
           setSuit("");
-          const drawnCardArr = gameService.pickNCards(4, newDeck);
 
           // Add the drawn cards to the opponent's hand
           if (player1Turn) {
-            setPlayer2([...(player2 as CardProps[]), ...drawnCardArr]);
+            setPlayer2([...(player2 as CardProps[]), ...drawnCards]);
             setPlayer1(player1.filter((c) => c !== card));
           } else {
-            setPlayer1([...(player1 as CardProps[]), ...drawnCardArr]);
+            setPlayer1([...(player1 as CardProps[]), ...drawnCards]);
             setPlayer2(player2.filter((c) => c !== card));
           }
         }
@@ -210,10 +222,10 @@ const Game = ({ cardNumber }: IGame) => {
             : setPlayer2(player2.filter((c) => c !== card));
           togglePlayerTurn();
           handleNewBoardCard(card);
-          console.log(newDeck);
         }
         break;
     }
+    console.log(newDeck, player1, player2, newBoardCard);
   };
   const togglePlayerTurn = () => {
     if (player1Turn) {
@@ -249,10 +261,10 @@ const Game = ({ cardNumber }: IGame) => {
         setPlayer2Turn(!player2Turn);
         setPlayer1Turn(true);
       }
+      console.log(newDeck);
     }
   };
 
-  // Call resetGame function when needed
   const handleGameWin = () => {
     if (player1.length === 0) {
       alert("Player 1 Wins");
@@ -270,11 +282,22 @@ const Game = ({ cardNumber }: IGame) => {
 
   return (
     <>
+      <div className="w-full flex justify-start pl-2 pb-0">
+        <BackButton
+          state={cardNumber}
+          setState={setCardNumber}
+          buttonVariant={"destructive"}
+        >
+          Quit
+        </BackButton>
+      </div>
+
       <PlayerHand
         playerTurn={player1Turn}
         playerHand={player1}
         handleCardClick={playCard1}
       />
+
       <div className="flex gap-4">
         <Deck onCardClick={handleDeckClick} />
         <div className="flex flex-col gap-2 ml-8">
@@ -304,20 +327,20 @@ const Game = ({ cardNumber }: IGame) => {
       />
       {gameWon && (
         <DialogBox isOpen={gameWon}>
-          <div className="flex gap-10 flex-col pt-10 pb-10 rounded-md">
+          <div className="flex gap-5 flex-col pt-10 pb-10 rounded-md">
             <Button
-              className="text-xl p-4"
-              variant={"secondary"}
+              className="text-xl m-4"
+              variant="secondary"
               onClick={() => {
-                setVsPlayer(false);
+                setPractice(false);
                 setCardNumber(null);
               }}
             >
               Back to Main Menu
             </Button>
             <Button
-              className="text-xl p-4"
-              variant={"secondary"}
+              className="text-xl m-4"
+              variant="secondary"
               onClick={() => setCardNumber(null)}
             >
               Play Again

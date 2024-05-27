@@ -1,6 +1,7 @@
 // gameComponents.ts
 
 import { CardProps } from "@/components/Card";
+import { Socket } from "socket.io-client";
 import { v4 as uuidv4 } from 'uuid';
 
 class GameService {
@@ -55,9 +56,10 @@ class GameService {
     return randomCard;
   };
 
-  public pickNCards = (n: number, newDeck: CardProps[]) : CardProps[] => {
+  public pickNCards = (n: number, newDeck: CardProps[]) : {drawnCards: CardProps[], remainingDeck:CardProps[]} => {
     
     const drawnCardArr: CardProps[] = [];
+    const remainingDeck: CardProps[] = [...newDeck];
 
     for (let i = 0; i < n; i++) {
         if(newDeck.length === 0) {
@@ -65,14 +67,34 @@ class GameService {
             break;
         }
       // Generate a random card from the remaining deck
-      const drawnCard = this.getRandomCard(newDeck);
+      const randomIndex = Math.floor(Math.random() * remainingDeck.length);
+    const drawnCard = remainingDeck.splice(randomIndex, 1)[0];
 
       drawnCardArr.push(drawnCard as CardProps);
     }
-    return drawnCardArr;
-}
+    return {drawnCards: drawnCardArr, remainingDeck};
 }
 
+public async createGameRoom(socket: Socket, roomId: string): Promise<boolean> {
+    return new Promise((rs, rj) => {
+      socket.emit("create_room", { roomId });
+      socket.on("room_created", () => rs(true));
+      socket.on("create_room_error", ({ error }) => rj(error));
+    });
+  }
+public async joinGameRoom(socket: Socket, roomId: string): Promise<boolean> {
+    return new Promise((rs, rj) => {
+      socket.emit("join_room", { roomId });
+      socket.on("room_joined", () => rs(true));
+      socket.on("room_join_error", ({ error }) => rj(error));
+      socket.on("no_room", ({ error }) => rj(error));
+    });
+  }
 
+public updateGame(socket: Socket, gameState: any) {
+    socket.emit("update_game_state", gameState );
+  }
+
+}
 
 export default new GameService;

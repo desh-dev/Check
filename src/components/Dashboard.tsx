@@ -88,7 +88,7 @@ const Dashboard = ({ children }: DashboardProps) => {
           </DropdownMenu>
         </header>
         <main className="flex flex-1 border shadow-lg board">
-          <div className="flex flex-1 flex-col gap-11 items-center justify-around">
+          <div className="flex flex-1 flex-col gap-4 items-center justify-around">
             {children}
           </div>
         </main>

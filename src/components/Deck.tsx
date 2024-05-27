@@ -1,7 +1,7 @@
 import Card from "./Card";
 
 interface IDeckProps {
-  onCardClick: () => void;
+  onCardClick?: () => void;
 }
 
 const Deck = ({ onCardClick }: IDeckProps) => {

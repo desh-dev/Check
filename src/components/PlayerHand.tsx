@@ -2,25 +2,27 @@ import Card, { CardProps } from "./Card";
 
 interface PlayerHandProps {
   playerTurn?: boolean;
-  playerHand: CardProps[];
-  handleCardClick: (card: CardProps) => void;
+  playerHand?: CardProps[];
+  handleCardClick?: (card: CardProps) => void;
 }
 
-const PlayerHand: React.FC<PlayerHandProps> = ({
+const PlayerHand = ({
   playerTurn,
   playerHand,
   handleCardClick,
-}) => {
+}: PlayerHandProps) => {
+  const overlap = (playerHand?.length as number) < 10 ? -10 : -10;
+
   return (
-    <div className="flex">
+    <div className="flex w-full max-w-[75%] justify-center">
       {playerHand &&
         playerHand.map((card, index) => (
           <div
             key={index}
-            onClick={() => handleCardClick(card)}
-            className={`relative ${
-              index > 0 ? "ml-[-20]" : "ml-0"
-            } z-${index} ${playerTurn ? "cursor-pointer" : ""}`}
+            onClick={() => handleCardClick?.(card)}
+            className={`relative ml-[${overlap}px] z-${index} ${
+              playerTurn ? "cursor-pointer" : ""
+            }`}
           >
             <Card {...card} />
           </div>
