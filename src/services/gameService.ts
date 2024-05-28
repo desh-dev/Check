@@ -75,16 +75,16 @@ class GameService {
     return {drawnCards: drawnCardArr, remainingDeck};
 }
 
-public async createGameRoom(socket: Socket, roomId: string): Promise<boolean> {
+public async createGameRoom(socket: Socket, roomId: string, opponent1: string): Promise<boolean> {
     return new Promise((rs, rj) => {
-      socket.emit("create_room", { roomId });
+      socket.emit("create_room", { roomId, opponent1 });
       socket.on("room_created", () => rs(true));
       socket.on("create_room_error", ({ error }) => rj(error));
     });
   }
-public async joinGameRoom(socket: Socket, roomId: string): Promise<boolean> {
+public async joinGameRoom(socket: Socket, roomId: string, opponent2: string): Promise<boolean> {
     return new Promise((rs, rj) => {
-      socket.emit("join_room", { roomId });
+      socket.emit("join_room", { roomId, opponent2 });
       socket.on("room_joined", () => rs(true));
       socket.on("room_join_error", ({ error }) => rj(error));
       socket.on("no_room", ({ error }) => rj(error));

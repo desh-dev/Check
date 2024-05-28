@@ -19,8 +19,15 @@ import Chat from "../Chat";
 interface IGameMultiplayer {
   roomName: string;
   currentUser: string;
+  playerName: string;
+  opponentName: string;
 }
-const Game = ({ roomName, currentUser }: IGameMultiplayer) => {
+const Game = ({
+  roomName,
+  currentUser,
+  playerName,
+  opponentName,
+}: IGameMultiplayer) => {
   // const location = useLocation();
   // const data = new URLSearchParams(location.search);
 
@@ -569,11 +576,16 @@ const Game = ({ roomName, currentUser }: IGameMultiplayer) => {
             </div>
           </DialogBox>
         )}
-        {currentUser === "player1" ? (
-          <PlayerHand playerTurn={false} playerHand={cardArray2} />
-        ) : (
-          <PlayerHand playerTurn={false} playerHand={cardArray1} />
-        )}
+        <div className="flex flex-col w-75% gap-1 justify-center">
+          {currentUser === "player1" ? (
+            <PlayerHand playerTurn={false} playerHand={cardArray2} />
+          ) : (
+            <PlayerHand playerTurn={false} playerHand={cardArray1} />
+          )}
+          <div className="flex w-full justify-center">
+            <p className="text-white text-sm font-semibold">{opponentName}</p>
+          </div>
+        </div>
         <div className="flex gap-4">
           {currentUser === "player1" ? (
             <Deck onCardClick={handleDeckClick1} />
@@ -600,19 +612,24 @@ const Game = ({ roomName, currentUser }: IGameMultiplayer) => {
             {suitSelector && <SuitSelector updateSuit={updateSuit} />}
           </div>
         </div>
-        {currentUser === "player1" ? (
-          <PlayerHand
-            playerTurn={player1Turn}
-            playerHand={player1}
-            handleCardClick={playCard1}
-          />
-        ) : (
-          <PlayerHand
-            playerTurn={player2Turn}
-            playerHand={player2}
-            handleCardClick={playCard2}
-          />
-        )}
+        <div className="flex flex-col w-75% gap-1 justify-center">
+          <div className="flex w-full justify-center">
+            <p className="text-white text-sm font-semibold">{playerName}</p>
+          </div>
+          {currentUser === "player1" ? (
+            <PlayerHand
+              playerTurn={player1Turn}
+              playerHand={player1}
+              handleCardClick={playCard1}
+            />
+          ) : (
+            <PlayerHand
+              playerTurn={player2Turn}
+              playerHand={player2}
+              handleCardClick={playCard2}
+            />
+          )}
+        </div>
         {gameWon && (
           <DialogBox isOpen={gameWon}>
             <div className="flex gap-5 flex-col pt-10 pb-10 rounded-md">

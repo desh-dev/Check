@@ -14,7 +14,7 @@ const PlayerHand = ({
   const overlap = (playerHand?.length as number) < 10 ? -10 : -10;
 
   return (
-    <div className="flex w-full max-w-[75%] justify-center">
+    <div className="flex w-full justify-center">
       {playerHand &&
         playerHand.map((card, index) => (
           <div

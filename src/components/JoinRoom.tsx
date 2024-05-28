@@ -1,5 +1,4 @@
-import React, { useContext, useState } from "react";
-import gameContext from "@/gameContext";
+import React, { useEffect, useState } from "react";
 import gameService from "@/services/gameService";
 import socketService from "@/services/socketService";
 import Dashboard from "./Dashboard";
@@ -19,11 +18,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 
 interface IJoinRoomProps {
-  setRoomName: React.Dispatch<React.SetStateAction<string>>;
   joinGameRoom: boolean;
   setJoinGameRoom: React.Dispatch<React.SetStateAction<boolean>>;
-  tempPlayerName: string;
-  setTempPlayerName: React.Dispatch<React.SetStateAction<string>>;
+  playerName: string;
+  setPlayerName: React.Dispatch<React.SetStateAction<string>>;
+  setRoomName: React.Dispatch<React.SetStateAction<string>>;
 }
 const FormSchema = z.object({
   username: z
@@ -42,14 +41,14 @@ const FormSchema = z.object({
 });
 
 const JoinRoom = ({
-  setRoomName,
   joinGameRoom,
   setJoinGameRoom,
-  tempPlayerName,
-  setTempPlayerName,
+  playerName,
+  setPlayerName,
+  setRoomName,
 }: IJoinRoomProps) => {
   const [isJoining, setJoining] = useState(false);
-  const { setInRoom, playerName } = useContext(gameContext);
+
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
   });
@@ -71,18 +70,23 @@ const JoinRoom = ({
     setJoining(true);
 
     const joined = await gameService
-      .joinGameRoom(socket, data.roomName)
+      .joinGameRoom(socket, data.roomName, data.username)
       .catch((err) => {
         alert(err);
       });
 
     if (joined) {
-      setTempPlayerName(data.username);
-      setInRoom(true);
+      setPlayerName(data.username);
       setRoomName(data.roomName);
     }
     setJoining(false);
   };
+  useEffect(() => {
+    const storedName = localStorage.getItem("playerName");
+    if (storedName) {
+      setPlayerName(JSON.parse(storedName));
+    }
+  }, []);
 
   return (
     <Dashboard>
@@ -102,7 +106,7 @@ const JoinRoom = ({
                     <Input
                       placeholder="Nickname"
                       {...field}
-                      defaultValue={playerName ? playerName : tempPlayerName}
+                      defaultValue={playerName}
                     />
                   </FormControl>
                   <FormMessage />

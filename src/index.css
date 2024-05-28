@@ -97,3 +97,29 @@
 .chat-messages::-webkit-scrollbar-thumb:hover {
   background-color: #888; /* Thumb hover color */
 }
+.faded-rule {
+  position: relative;
+  width: 45%;
+  height: 1px;
+  background-color: #ccc;
+  border: none;
+}
+
+.faded-rule::before,
+.faded-rule::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: #ccc;
+}
+
+.faded-rule::before {
+  left: -10px;
+}
+
+.faded-rule::after {
+  right: -10px;
+}

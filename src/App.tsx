@@ -8,21 +8,12 @@ import BackButton from "./components/BackButton";
 import Practice from "./components/Practice.tsx";
 
 function App() {
-  const [isInRoom, setInRoom] = useState(false);
-  const [isPlayerTurn, setPlayerTurn] = useState(false);
-  const [isGameStarted, setGameStarted] = useState(false);
   const [cardNumber, setCardNumber] = useState<CardNumber>(null);
   const [multiplayer, setMultiplayer] = useState(false);
   const [vsAI, setVsAI] = useState(false);
   const [practice, setPractice] = useState(false);
 
   const gameContextValue: IGameContextProps = {
-    isInRoom,
-    setInRoom,
-    playerName: "",
-    setPlayerName: () => {},
-    isGameStarted,
-    setGameStarted,
     cardNumber,
     setCardNumber,
     multiplayer,

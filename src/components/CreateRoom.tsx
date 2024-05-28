@@ -1,5 +1,4 @@
-import React, { useContext, useState } from "react";
-import gameContext from "@/gameContext";
+import React, { useEffect, useState } from "react";
 import gameService from "@/services/gameService";
 import socketService from "@/services/socketService";
 import { v4 as uuidv4 } from "uuid";
@@ -20,12 +19,11 @@ import { Button } from "./ui/button";
 import BackButton from "./BackButton";
 
 interface IJoinRoomProps {
-  roomName: string;
-  setRoomName: React.Dispatch<React.SetStateAction<string>>;
+  playerName: string;
   createRoom: boolean;
   setCreateRoom: React.Dispatch<React.SetStateAction<boolean>>;
-  tempPlayerName: string;
-  setTempPlayerName: React.Dispatch<React.SetStateAction<string>>;
+  setRoomName: React.Dispatch<React.SetStateAction<string>>;
+  setPlayerName: React.Dispatch<React.SetStateAction<string>>;
 }
 
 const FormSchema = z.object({
@@ -39,15 +37,14 @@ const FormSchema = z.object({
 });
 
 const CreateRoom = ({
-  setRoomName,
-  roomName,
+  playerName,
   createRoom,
   setCreateRoom,
-  tempPlayerName,
-  setTempPlayerName,
+  setRoomName,
+  setPlayerName,
 }: IJoinRoomProps) => {
   const [isJoining, setJoining] = useState(false);
-  const { setInRoom, playerName } = useContext(gameContext);
+
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
   });
@@ -57,21 +54,25 @@ const CreateRoom = ({
     if (!data.username || data.username.trim() === "" || !socket) return;
     const randomRoomName = uuidv4().substring(0, 6).toUpperCase();
     setJoining(true);
-    setTempPlayerName(data.username);
 
     const joined = await gameService
-      .createGameRoom(socket, randomRoomName)
+      .createGameRoom(socket, randomRoomName, data.username)
       .catch((err) => {
         alert(err);
       });
 
     if (joined) {
-      setInRoom(true);
+      setPlayerName(data.username);
       setRoomName(randomRoomName);
-      console.log(roomName);
     }
     setJoining(false);
   };
+  useEffect(() => {
+    const storedName = localStorage.getItem("playerName");
+    if (storedName) {
+      setPlayerName(JSON.parse(storedName));
+    }
+  }, []);
 
   return (
     <Dashboard>
@@ -90,8 +91,8 @@ const CreateRoom = ({
                   <FormControl>
                     <Input
                       placeholder="Name"
+                      defaultValue={playerName}
                       {...field}
-                      defaultValue={playerName ? playerName : tempPlayerName}
                     />
                   </FormControl>
                   <FormMessage />

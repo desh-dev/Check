@@ -6,10 +6,10 @@ const Multiplayer = () => {
   return (
     <Dashboard>
       <div className="flex gap-10 flex-col bg-muted/40 p-10 rounded-md">
-        <Button className="text-xl p-4" variant={"secondary"}>
+        <Button className="text-xl m-0" variant={"secondary"}>
           <Link to={"/jambo"}>Jambo</Link>
         </Button>
-        <Button className="text-xl p-4" variant={"secondary"}>
+        <Button className="text-xl m-0" variant={"secondary"}>
           <Link to={"/vsFriend"}>vs Friend</Link>
         </Button>
         <Button className="text-xl p-4" variant={"default"}>

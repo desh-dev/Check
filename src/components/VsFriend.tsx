@@ -21,7 +21,8 @@ const VsFriend = () => {
   const [roomFull, setRoomFull] = useState(false);
   const [createRoom, setCreateRoom] = useState(false);
   const [joinRoom, setJoinRoom] = useState(false);
-  const [tempPlayerName, setTempPlayerName] = useState("");
+  const [playerName, setPlayerName] = useState("");
+  const [opponentName, setOpponentName] = useState("");
 
   const connectSocket = async () => {
     await socketService.connect(ENDPOINT, connectionOptions).catch((err) => {
@@ -31,32 +32,36 @@ const VsFriend = () => {
 
   useEffect(() => {
     connectSocket();
-    socketService.socket?.on("room_created", ({ player, userId }) => {
+    socketService.socket?.on("room_created", ({ player }) => {
       setCurrentUser(player);
-      console.log(player, userId);
+      console.log(player);
     });
-    socketService.socket?.on("room_joined", ({ player, userId }) => {
+    socketService.socket?.on("room_joined", ({ player, opponent1 }) => {
+      setOpponentName(opponent1);
       setCurrentUser(player);
-      console.log(player, userId);
+      console.log(player);
     });
     socketService.socket?.on("room_full", () => {
       setRoomFull(true);
+      socketService.socket?.on("opponent", ({ opponent2 }) => {
+        console.log(opponent2);
+        setOpponentName(opponent2);
+      });
     });
+    const storedName = localStorage.getItem("playerName");
+    if (storedName) {
+      setPlayerName(JSON.parse(storedName));
+    }
 
-    // socketService.socket?.on("userData", ({ userId }) => {
-    //   setUsers([...users, userId]);
-    //   console.log(users, currentUser);
-    //   //when second player joins game
-    // });
-    // socketService.socket?.on("newUserData", ({ userId }) => {
-    //   setUsers(users.filter((user) => user !== userId));
-    //   console.log(users, currentUser);
-    // });
     return () => {
       //shut down connnection instance
       socketService.socket?.disconnect();
     };
   }, []);
+  useEffect(() => {
+    if (playerName)
+      localStorage.setItem("playerName", JSON.stringify(playerName));
+  }, [playerName]);
 
   return (
     <>
@@ -68,25 +73,31 @@ const VsFriend = () => {
       )}
       {!roomName && createRoom && (
         <CreateRoom
+          playerName={playerName}
+          setPlayerName={setPlayerName}
           setRoomName={setRoomName}
-          roomName={roomName}
           createRoom={createRoom}
           setCreateRoom={setCreateRoom}
-          tempPlayerName={tempPlayerName}
-          setTempPlayerName={setTempPlayerName}
         />
       )}
       {!roomName && joinRoom && (
         <JoinRoom
+          playerName={playerName}
+          setPlayerName={setPlayerName}
           setRoomName={setRoomName}
           joinGameRoom={joinRoom}
           setJoinGameRoom={setJoinRoom}
-          tempPlayerName={tempPlayerName}
-          setTempPlayerName={setTempPlayerName}
         />
       )}
       {roomName && !roomFull && <ShareRoom roomName={roomName} />}
-      {roomFull && <Game roomName={roomName} currentUser={currentUser} />}
+      {roomFull && (
+        <Game
+          roomName={roomName}
+          currentUser={currentUser}
+          playerName={playerName}
+          opponentName={opponentName}
+        />
+      )}
     </>
   );
 };
