@@ -88,7 +88,8 @@ const Game = ({ cardNumber }: IGamePractice) => {
           (!suit &&
             (card.suit === newBoardCard?.suit ||
               card.rank === newBoardCard?.rank ||
-              newBoardCard?.suit === "joker")) ||
+              newBoardCard?.suit === "joker" ||
+              newBoardCard?.rank === "jack")) ||
           (suit && card.suit === suit)
         )
           if (newDeck) {
@@ -119,7 +120,9 @@ const Game = ({ cardNumber }: IGamePractice) => {
               (newBoardCard?.suit === "Diamonds" ||
                 newBoardCard?.suit === "Hearts" ||
                 newBoardCard?.rank === "7" ||
-                newBoardCard?.rank === "ace")) ||
+                newBoardCard?.rank === "ace" ||
+                newBoardCard?.rank === "jack" ||
+                newBoardCard?.suit === "joker")) ||
             suit === "Diamonds" ||
             suit === "Hearts"
           ) {
@@ -149,7 +152,9 @@ const Game = ({ cardNumber }: IGamePractice) => {
             (newBoardCard?.suit === "Spades" ||
               newBoardCard?.suit === "Clubs" ||
               newBoardCard?.rank === "7" ||
-              newBoardCard?.rank === "ace")) ||
+              newBoardCard?.rank === "ace" ||
+              newBoardCard?.suit === "joker" ||
+              newBoardCard?.rank === "jack")) ||
           suit === "Spades" ||
           suit === "Clubs"
         ) {
@@ -178,7 +183,8 @@ const Game = ({ cardNumber }: IGamePractice) => {
           (!suit &&
             (card.suit === newBoardCard?.suit ||
               card.rank === newBoardCard?.rank ||
-              newBoardCard?.suit === "joker")) ||
+              newBoardCard?.suit === "joker" ||
+              newBoardCard?.rank === "jack")) ||
           card.suit === suit
         ) {
           handleNewBoardCard(card);

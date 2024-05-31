@@ -24,21 +24,6 @@ interface IJoinRoomProps {
   setPlayerName: React.Dispatch<React.SetStateAction<string>>;
   setRoomName: React.Dispatch<React.SetStateAction<string>>;
 }
-const FormSchema = z.object({
-  username: z
-    .string()
-    .min(3, { message: "Nickname must be at least 3 characters" })
-    .max(10, { message: "Nickname must be at most 10 characters" })
-    .refine((value) => value !== null && value !== undefined, {
-      message: "Room name is required",
-    }),
-  roomName: z
-    .string()
-    .length(6, { message: "Room name must be 6 characters" })
-    .refine((value) => value !== null && value !== undefined, {
-      message: "Room name is required",
-    }),
-});
 
 const JoinRoom = ({
   joinGameRoom,
@@ -47,15 +32,27 @@ const JoinRoom = ({
   setPlayerName,
   setRoomName,
 }: IJoinRoomProps) => {
-  const [isJoining, setJoining] = useState(false);
-
+  const FormSchema = z.object({
+    username: z
+      .string()
+      .min(3, { message: "Nickname must be at least 3 characters" })
+      .max(10, { message: "Nickname must be at most 10 characters" })
+      .refine((value) => value !== null && value !== undefined, {
+        message: "Room name is required",
+      })
+      .default(playerName),
+    roomName: z
+      .string()
+      .length(6, { message: "Room name must be 6 characters" })
+      .refine((value) => value !== null && value !== undefined, {
+        message: "Room name is required",
+      }),
+  });
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
   });
-  //   const handleRoomNameChange = (e: React.ChangeEvent<any>) => {
-  //     const value = e.target.value;
-  //     setRoom(value);
-  //   };
+
+  const [isJoining, setJoining] = useState(false);
 
   const joinRoom = async (data: z.infer<typeof FormSchema>) => {
     const socket = socketService.socket;
@@ -105,8 +102,8 @@ const JoinRoom = ({
                   <FormControl>
                     <Input
                       placeholder="Nickname"
-                      {...field}
                       defaultValue={playerName}
+                      {...field}
                     />
                   </FormControl>
                   <FormMessage />
@@ -122,8 +119,8 @@ const JoinRoom = ({
                   <FormControl>
                     <Input
                       placeholder="Room Name"
-                      {...field}
                       autoComplete="off"
+                      {...field}
                     />
                   </FormControl>
                   <FormMessage />

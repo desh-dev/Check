@@ -3,7 +3,17 @@ import { useEffect, useRef, useState } from "react";
 import { Suits } from "../practice/Game";
 import { CardProps } from "../Card";
 import socketService from "@/services/socketService";
-import { Spade, Heart, Diamond, Club, X, Check, Home } from "lucide-react";
+import {
+  Spade,
+  Heart,
+  Diamond,
+  Club,
+  X,
+  Check,
+  Home,
+  Volume,
+  VolumeX,
+} from "lucide-react";
 import BoardCard from "../BoardCard";
 import Deck from "../Deck";
 import DialogBox from "../DialogBox";
@@ -15,6 +25,9 @@ import Dashboard from "../Dashboard";
 import { Socket } from "socket.io-client";
 import { Link } from "react-router-dom";
 import Chat from "../Chat";
+import Timer from "../Timer";
+import playCard from "../../assets/sounds/playCard.mp3";
+import shuffleCards from "../../assets/sounds/shuffleCards.wav";
 
 interface IGameMultiplayer {
   roomName: string;
@@ -38,9 +51,10 @@ const Game = ({
     2,
     7
   );
-
+  const timeLimit = 25;
   const [gameWon, setGameWon] = useState(false);
   const [winner, setWinner] = useState("");
+  const [remainingTime, setRemainingTime] = useState(timeLimit);
   const [player1Turn, setPlayer1Turn] = useState(true);
   const [player2Turn, setPlayer2Turn] = useState(false);
   const [player1, setPlayer1] = useState(playerHands[0]);
@@ -51,9 +65,12 @@ const Game = ({
   const [suit, setSuit] = useState<Suits>("");
   const [leaveGame, setLeaveGame] = useState(false);
   const [gameLeft, setGameLeft] = useState(false);
+  const [isSoundMuted, setIsSoundMuted] = useState(false);
   const suitPromiseRef = useRef<{ resolve: (value: Suits) => void } | null>(
     null
   );
+  const playCardSound = new Audio(playCard);
+  const shuffleCardsSound = new Audio(shuffleCards);
 
   let updatedGameState = {
     gameWon: gameWon,
@@ -109,6 +126,7 @@ const Game = ({
           (updatedGameState.newDeck = newDeck),
           setSuit(suit),
           (updatedGameState.suit = suit);
+        shuffleCardsSound.play();
       }
     );
 
@@ -138,6 +156,8 @@ const Game = ({
     );
     socketService.socket?.on("room_left", () => {
       setGameLeft(true);
+      setPlayer1Turn(false);
+      setPlayer2Turn(false);
     });
   }, []);
 
@@ -174,18 +194,45 @@ const Game = ({
         setPlayer2Turn(false);
         const playerOne = player1;
         if (player === player1) {
-          setPlayer1(player1.filter((c) => c !== card));
+          setPlayer1(updatedGameState.player1.filter((c) => c !== card));
           updatedGameState.player1 = updatedGameState.player1.filter(
             (c) => c !== card
           );
         } else {
-          setPlayer2(player2.filter((c) => c !== card));
+          setPlayer2(updatedGameState.player2.filter((c) => c !== card));
           updatedGameState.player2 = updatedGameState.player2.filter(
             (c) => c !== card
           );
         }
+        let selectedSuit: Suits | null = null;
+        const timer = setTimeout(() => {
+          if (selectedSuit === null) {
+            selectedSuit = "";
+          }
+          if (player === playerOne) {
+            setPlayer2Turn(true);
+            updatedGameState.player2Turn = true;
+            updatedGameState.player1Turn = false;
+          } else {
+            setPlayer1Turn(true);
+            updatedGameState.player1Turn = true;
+            updatedGameState.player2Turn = false;
+          }
+          setSuitSelector(false);
+          suitPromiseRef.current?.resolve("");
+          gameService.updateGame(
+            socketService.socket as Socket,
+            updatedGameState
+          );
+        }, (timeLimit - 1) * 1000);
+
         await new Promise((resolve) => {
-          suitPromiseRef.current = { resolve };
+          suitPromiseRef.current = {
+            resolve: (selectedSuit: Suits | null) => {
+              clearTimeout(timer);
+              resolve(selectedSuit);
+            },
+          };
         }).then((selectedSuit) => {
           if (player === playerOne) {
             setPlayer2Turn(true);
@@ -198,11 +245,12 @@ const Game = ({
           }
           setSuitSelector(false);
           updatedGameState.suit = selectedSuit as Suits;
+          gameService.updateGame(
+            socketService.socket as Socket,
+            updatedGameState
+          );
+          !isSoundMuted ? playCardSound.play() : null;
         });
-        gameService.updateGame(
-          socketService.socket as Socket,
-          updatedGameState
-        );
         break;
 
       case "7":
@@ -210,7 +258,8 @@ const Game = ({
           (!suit &&
             (card.suit === newBoardCard?.suit ||
               card.rank === newBoardCard?.rank ||
-              newBoardCard?.suit === "joker")) ||
+              newBoardCard?.suit === "joker" ||
+              newBoardCard?.rank === "jack")) ||
           (suit && card.suit === suit)
         )
           if (newDeck) {
@@ -250,6 +299,7 @@ const Game = ({
               socketService.socket as Socket,
               updatedGameState
             );
+            !isSoundMuted ? playCardSound.play() : null;
           }
 
         break;
@@ -262,7 +312,9 @@ const Game = ({
               (newBoardCard?.suit === "Diamonds" ||
                 newBoardCard?.suit === "Hearts" ||
                 newBoardCard?.rank === "7" ||
-                newBoardCard?.rank === "ace")) ||
+                newBoardCard?.rank === "ace" ||
+                newBoardCard?.suit === "joker" ||
+                newBoardCard?.rank === "jack")) ||
             suit === "Diamonds" ||
             suit === "Hearts"
           ) {
@@ -302,6 +354,7 @@ const Game = ({
               socketService.socket as Socket,
               updatedGameState
             );
+            !isSoundMuted ? playCardSound.play() : null;
           }
         }
         break;
@@ -312,7 +365,9 @@ const Game = ({
             (newBoardCard?.suit === "Spades" ||
               newBoardCard?.suit === "Clubs" ||
               newBoardCard?.rank === "7" ||
-              newBoardCard?.rank === "ace")) ||
+              newBoardCard?.rank === "ace" ||
+              newBoardCard?.suit === "joker" ||
+              newBoardCard?.rank === "jack")) ||
           suit === "Spades" ||
           suit === "Clubs"
         ) {
@@ -352,8 +407,8 @@ const Game = ({
             socketService.socket as Socket,
             updatedGameState
           );
+          !isSoundMuted ? playCardSound.play() : null;
         }
-
         break;
 
       case "ace":
@@ -361,7 +416,8 @@ const Game = ({
           (!suit &&
             (card.suit === newBoardCard?.suit ||
               card.rank === newBoardCard?.rank ||
-              newBoardCard?.suit === "joker")) ||
+              newBoardCard?.suit === "joker" ||
+              newBoardCard?.rank === "jack")) ||
           card.suit === suit
         ) {
           handleNewBoardCard(card);
@@ -379,11 +435,12 @@ const Game = ({
               (c) => c !== card
             );
           }
+          gameService.updateGame(
+            socketService.socket as Socket,
+            updatedGameState
+          );
+          !isSoundMuted ? playCardSound.play() : null;
         }
-        gameService.updateGame(
-          socketService.socket as Socket,
-          updatedGameState
-        );
         break;
 
       default:
@@ -406,6 +463,11 @@ const Game = ({
           setSuit("");
           updatedGameState.suit = "";
           setSuitSelector(false);
+          gameService.updateGame(
+            socketService.socket as Socket,
+            updatedGameState
+          );
+          !isSoundMuted ? playCardSound.play() : null;
         } else if (
           !suit &&
           (newBoardCard?.rank === "jack" ||
@@ -439,11 +501,12 @@ const Game = ({
           updatedGameState.player1Turn = !player1Turn;
           updatedGameState.player2Turn = !player2Turn;
           handleNewBoardCard(card);
+          gameService.updateGame(
+            socketService.socket as Socket,
+            updatedGameState
+          );
+          !isSoundMuted ? playCardSound.play() : null;
         }
-        gameService.updateGame(
-          socketService.socket as Socket,
-          updatedGameState
-        );
         break;
     }
     console.log(updatedGameState);
@@ -468,54 +531,50 @@ const Game = ({
     }
   };
   const handleDeckClick1 = () => {
-    if (newDeck) {
-      // Generate a random card from the remaining deck
-      // Add the drawn card to the current player's hand
-      if (player1Turn) {
-        const drawnCard = gameService.getRandomCard(updatedGameState.newDeck);
-        updatedGameState.newDeck = updatedGameState.newDeck.filter(
-          (c) => c !== drawnCard
-        );
-        setPlayer1([...player1, drawnCard as CardProps]);
-        updatedGameState.player1 = [
-          ...updatedGameState.player1,
-          drawnCard as CardProps,
-        ];
-        setPlayer1Turn(false);
-        updatedGameState.player1Turn = false;
-        setPlayer2Turn(true);
-        updatedGameState.player2Turn = true;
+    // Generate a random card from the remaining deck
+    // Add the drawn card to the current player's hand
+    if (newDeck && player1Turn) {
+      const drawnCard = gameService.getRandomCard(updatedGameState.newDeck);
+      updatedGameState.newDeck = updatedGameState.newDeck.filter(
+        (c) => c !== drawnCard
+      );
+      setNewDeck(updatedGameState.newDeck);
+      setPlayer1([...updatedGameState.player1, drawnCard as CardProps]);
+      updatedGameState.player1 = [
+        ...updatedGameState.player1,
+        drawnCard as CardProps,
+      ];
+      setSuitSelector(false);
+      setPlayer1Turn(false);
+      updatedGameState.player1Turn = false;
+      setPlayer2Turn(true);
+      updatedGameState.player2Turn = true;
 
-        gameService.updateGame(
-          socketService.socket as Socket,
-          updatedGameState
-        );
-      }
+      gameService.updateGame(socketService.socket as Socket, updatedGameState);
+      !isSoundMuted ? playCardSound.play() : null;
     }
   };
   const handleDeckClick2 = () => {
-    if (newDeck) {
-      // Generate a random card from the remaining deck
-      // Add the drawn card to the current player's hand
-      if (player2Turn) {
-        const drawnCard = gameService.getRandomCard(updatedGameState.newDeck);
-        updatedGameState.newDeck = updatedGameState.newDeck.filter(
-          (c) => c !== drawnCard
-        );
-        setPlayer2([...player2, drawnCard as CardProps]);
-        updatedGameState.player2 = [
-          ...updatedGameState.player2,
-          drawnCard as CardProps,
-        ];
-        setPlayer2Turn(false);
-        updatedGameState.player2Turn = false;
-        setPlayer1Turn(true);
-        updatedGameState.player1Turn = true;
-        gameService.updateGame(
-          socketService.socket as Socket,
-          updatedGameState
-        );
-      }
+    // Generate a random card from the remaining deck
+    // Add the drawn card to the current player's hand
+    if (newDeck && player2Turn) {
+      const drawnCard = gameService.getRandomCard(updatedGameState.newDeck);
+      updatedGameState.newDeck = updatedGameState.newDeck.filter(
+        (c) => c !== drawnCard
+      );
+      setNewDeck(updatedGameState.newDeck);
+      setPlayer2([...updatedGameState.player2, drawnCard as CardProps]);
+      updatedGameState.player2 = [
+        ...updatedGameState.player2,
+        drawnCard as CardProps,
+      ];
+      setSuitSelector(false);
+      setPlayer2Turn(false);
+      updatedGameState.player2Turn = false;
+      setPlayer1Turn(true);
+      updatedGameState.player1Turn = true;
+      gameService.updateGame(socketService.socket as Socket, updatedGameState);
+      !isSoundMuted ? playCardSound.play() : null;
     }
   };
   const leaveGameFunction = () => {
@@ -530,10 +589,12 @@ const Game = ({
     if (player1.length === 0) {
       alert("Player 1 Wins");
       setGameWon(true);
+      setPlayer2Turn(false);
     }
     if (player2.length === 0) {
       alert("Player 2 Wins");
       setGameWon(true);
+      setPlayer1Turn(false);
     }
   };
 
@@ -552,9 +613,20 @@ const Game = ({
   return (
     <>
       <Dashboard>
-        <div className="flex w-full pl-2 justify-start">
+        <div className="flex w-full pl-2 pr-2 justify-between">
           <Button onClick={leaveGameFunction} variant="destructive">
             Quit
+          </Button>
+          <Button
+            variant="outline"
+            className="flex justify-center items-center w-8 h-8 p-1"
+            onClick={() => setIsSoundMuted(!isSoundMuted)}
+          >
+            {!isSoundMuted ? (
+              <Volume className="w-full h-full" />
+            ) : (
+              <VolumeX className="w-full h-full" />
+            )}
           </Button>
         </div>
         {leaveGame && (
@@ -652,8 +724,27 @@ const Game = ({
             </div>
           </DialogBox>
         )}
-        <div>
-          <Chat />
+        <Chat />
+        <div className="fixed bottom-4 p-0 left-2 md:bottom-2 md:left-[100px] lg:bottom-2 lg:left-[210px]">
+          {(currentUser === "player1" && player1Turn) || suitSelector ? (
+            <Timer
+              timeLimit={timeLimit}
+              playerTurn={player1Turn}
+              suitSelector={suitSelector}
+              remainingTime={remainingTime}
+              setRemainingTime={setRemainingTime}
+              handleTimeOut={handleDeckClick1}
+            />
+          ) : (currentUser === "player2" && player2Turn) || suitSelector ? (
+            <Timer
+              timeLimit={timeLimit}
+              playerTurn={player2Turn}
+              suitSelector={suitSelector}
+              remainingTime={remainingTime}
+              setRemainingTime={setRemainingTime}
+              handleTimeOut={handleDeckClick2}
+            />
+          ) : null}
         </div>
       </Dashboard>
     </>

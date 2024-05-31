@@ -26,16 +26,6 @@ interface IJoinRoomProps {
   setPlayerName: React.Dispatch<React.SetStateAction<string>>;
 }
 
-const FormSchema = z.object({
-  username: z
-    .string()
-    .min(3, { message: "Nickname must be at least 3 characters" })
-    .max(10, { message: "Nickname must be at most 10 characters" })
-    .refine((value) => value !== null && value !== undefined, {
-      message: "Nickname is required",
-    }),
-});
-
 const CreateRoom = ({
   playerName,
   createRoom,
@@ -43,11 +33,21 @@ const CreateRoom = ({
   setRoomName,
   setPlayerName,
 }: IJoinRoomProps) => {
-  const [isJoining, setJoining] = useState(false);
-
+  const FormSchema = z.object({
+    username: z
+      .string()
+      .min(3, { message: "Nickname must be at least 3 characters" })
+      .max(10, { message: "Nickname must be at most 10 characters" })
+      .refine((value) => value !== null && value !== undefined, {
+        message: "Nickname is required",
+      })
+      .default(playerName),
+  });
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
   });
+
+  const [isJoining, setJoining] = useState(false);
 
   const joinRoom = async (data: z.infer<typeof FormSchema>) => {
     const socket = socketService.socket;
