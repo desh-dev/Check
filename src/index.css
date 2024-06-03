@@ -123,3 +123,24 @@
 .faded-rule::after {
   right: -10px;
 }
+.playing-card {
+  transition: transform 0.3s ease;
+}
+
+.playing-card:hover {
+  transform: translateY(-5px);
+}
+@keyframes card-animation {
+  0% {
+transform: translateX(0) translateY(0);
+  }
+  100% {
+    transform: translateX(var(--target-x)) translateY(var(--target-y)); /* Use custom properties for positions */
+  }
+}
+.card-move {
+  animation: card-animation 0.7s ease;
+  position: absolute; /* Absolute positioning for the cloned card */
+  top: var(--init-target-y); /* Initial Y position from clicked card */
+  left: var(--init-target-x); /* Initial X position from clicked card */
+}

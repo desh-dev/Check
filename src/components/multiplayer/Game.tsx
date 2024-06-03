@@ -20,7 +20,6 @@ import DialogBox from "../DialogBox";
 import PlayerHand from "../PlayerHand";
 import SuitSelector from "../SuitSelector";
 import { Button } from "../ui/button";
-import { v4 as uuidv4 } from "uuid";
 import Dashboard from "../Dashboard";
 import { Socket } from "socket.io-client";
 import { Link } from "react-router-dom";
@@ -41,16 +40,15 @@ const Game = ({
   playerName,
   opponentName,
 }: IGameMultiplayer) => {
-  // const location = useLocation();
-  // const data = new URLSearchParams(location.search);
-
+  //MARK: - Variables
   const deck = gameService.generateFullDeck();
-
   const { playerHands, boardCard, remainingDeck } = gameService.distributeCards(
     deck,
     2,
     7
   );
+
+  let timer: NodeJS.Timeout | null = null;
   const timeLimit = 25;
   const [gameWon, setGameWon] = useState(false);
   const [winner, setWinner] = useState("");
@@ -69,6 +67,17 @@ const Game = ({
   const suitPromiseRef = useRef<{ resolve: (value: Suits) => void } | null>(
     null
   );
+  const timerPromiseRef = useRef<{ resolve: (value: boolean) => void } | null>(
+    null
+  );
+  const cardArray1: CardProps[] = Array.from(
+    { length: player1.length },
+    () => ({ suit: "card", rank: "cover", id: "cover" })
+  );
+  const cardArray2: CardProps[] = Array.from(
+    { length: player2.length },
+    () => ({ suit: "card", rank: "cover", id: "cover" })
+  );
   const playCardSound = new Audio(playCard);
   const shuffleCardsSound = new Audio(shuffleCards);
 
@@ -83,6 +92,7 @@ const Game = ({
     suit: suit,
   };
 
+  //MARK: useEffect
   useEffect(() => {
     //send initial state to server
     socketService.socket?.emit("init_game_state", {
@@ -127,6 +137,10 @@ const Game = ({
           setSuit(suit),
           (updatedGameState.suit = suit);
         shuffleCardsSound.play();
+        const playerHands = document.querySelectorAll(".player-hand");
+        playerHands.forEach((hand) => {
+          hand.classList.add("animate-card");
+        });
       }
     );
 
@@ -160,39 +174,24 @@ const Game = ({
       setPlayer2Turn(false);
     });
   }, []);
+  useEffect(() => {
+    handleGameWin();
+  }, [player1, player2]);
 
-  const updateSuit = (newSuit: Suits) => {
-    // sets suit when jcommand is played
-    // Resolve the existing promise if any (prevents accumulation)
-    setSuit(newSuit);
-    suitPromiseRef.current?.resolve(newSuit);
-
-    suitPromiseRef.current = null;
-  };
-
-  const handleNewBoardCard = (card: CardProps) => {
-    // removes played card from deck
-    // pushes old board card to deck
-    // sets played card as new board card
-    if (newBoardCard) {
-      setNewDeck((prevDeck) => [...prevDeck, newBoardCard]);
-      updatedGameState.newDeck = [
-        ...updatedGameState.newDeck,
-        updatedGameState.boardCard as CardProps,
-      ];
-    }
-    setNewBoardCard(card);
-    updatedGameState.boardCard = card;
-  };
-
-  const handleCardFunction = async (card: CardProps, player: CardProps[]) => {
+  //MARK: HandleCard
+  const handleCardFunction = async (
+    card: CardProps,
+    player: CardProps[],
+    event: React.MouseEvent
+  ) => {
     switch (card.rank) {
       case "jack":
+        const playerOne = player1;
         setSuitSelector(true);
-        handleNewBoardCard(card);
+        handleNewBoardCard(card, event);
         setPlayer1Turn(false);
         setPlayer2Turn(false);
-        const playerOne = player1;
+        resolveTimer();
         if (player === player1) {
           setPlayer1(updatedGameState.player1.filter((c) => c !== card));
           updatedGameState.player1 = updatedGameState.player1.filter(
@@ -204,8 +203,9 @@ const Game = ({
             (c) => c !== card
           );
         }
+        !isSoundMuted ? playCardSound.play() : null;
         let selectedSuit: Suits | null = null;
-        const timer = setTimeout(() => {
+        timer = setTimeout(() => {
           if (selectedSuit === null) {
             selectedSuit = "";
           }
@@ -224,12 +224,12 @@ const Game = ({
             socketService.socket as Socket,
             updatedGameState
           );
-        }, (timeLimit - 1) * 1000);
+        }, timeLimit * 1000 - 500);
 
         await new Promise((resolve) => {
           suitPromiseRef.current = {
             resolve: (selectedSuit: Suits | null) => {
-              clearTimeout(timer);
+              clearTimeout(timer as NodeJS.Timeout);
               resolve(selectedSuit);
             },
           };
@@ -249,7 +249,6 @@ const Game = ({
             socketService.socket as Socket,
             updatedGameState
           );
-          !isSoundMuted ? playCardSound.play() : null;
         });
         break;
 
@@ -267,9 +266,10 @@ const Game = ({
               2,
               newDeck
             );
+            resolveTimer();
             setNewDeck(remainingDeck);
             updatedGameState.newDeck = remainingDeck;
-            handleNewBoardCard(card);
+            handleNewBoardCard(card, event);
             setSuit("");
             updatedGameState.suit = "";
 
@@ -300,6 +300,49 @@ const Game = ({
               updatedGameState
             );
             !isSoundMuted ? playCardSound.play() : null;
+
+            timer = setTimeout(() => {
+              const drawnCard = gameService.getRandomCard(
+                updatedGameState.newDeck
+              );
+              updatedGameState.newDeck = updatedGameState.newDeck.filter(
+                (c) => c !== drawnCard
+              );
+              setNewDeck(updatedGameState.newDeck);
+              if (player1Turn) {
+                setPlayer1([
+                  ...updatedGameState.player1,
+                  drawnCard as CardProps,
+                ]);
+                updatedGameState.player1 = [
+                  ...updatedGameState.player1,
+                  drawnCard as CardProps,
+                ];
+              } else {
+                setPlayer2([
+                  ...updatedGameState.player2,
+                  drawnCard as CardProps,
+                ]);
+                updatedGameState.player2 = [
+                  ...updatedGameState.player2,
+                  drawnCard as CardProps,
+                ];
+              }
+              togglePlayerTurn();
+              gameService.updateGame(
+                socketService.socket as Socket,
+                updatedGameState
+              );
+              !isSoundMuted ? playCardSound.play() : null;
+            }, (remainingTime - 1) * 1000);
+            await new Promise((resolve) => {
+              timerPromiseRef.current = {
+                resolve: () => {
+                  clearTimeout(timer as NodeJS.Timeout);
+                  resolve(true);
+                },
+              };
+            });
           }
 
         break;
@@ -324,7 +367,7 @@ const Game = ({
             );
             setNewDeck(remainingDeck);
             updatedGameState.newDeck = remainingDeck;
-            handleNewBoardCard(card);
+            handleNewBoardCard(card, event);
             setSuit("");
             updatedGameState.suit = "";
 
@@ -355,6 +398,50 @@ const Game = ({
               updatedGameState
             );
             !isSoundMuted ? playCardSound.play() : null;
+
+            resolveTimer();
+            timer = setTimeout(() => {
+              const drawnCard = gameService.getRandomCard(
+                updatedGameState.newDeck
+              );
+              updatedGameState.newDeck = updatedGameState.newDeck.filter(
+                (c) => c !== drawnCard
+              );
+              setNewDeck(updatedGameState.newDeck);
+              if (player1Turn) {
+                setPlayer1([
+                  ...updatedGameState.player1,
+                  drawnCard as CardProps,
+                ]);
+                updatedGameState.player1 = [
+                  ...updatedGameState.player1,
+                  drawnCard as CardProps,
+                ];
+              } else {
+                setPlayer2([
+                  ...updatedGameState.player2,
+                  drawnCard as CardProps,
+                ]);
+                updatedGameState.player2 = [
+                  ...updatedGameState.player2,
+                  drawnCard as CardProps,
+                ];
+              }
+              togglePlayerTurn();
+              gameService.updateGame(
+                socketService.socket as Socket,
+                updatedGameState
+              );
+              !isSoundMuted ? playCardSound.play() : null;
+            }, (remainingTime - 1) * 1000);
+            await new Promise((resolve) => {
+              timerPromiseRef.current = {
+                resolve: () => {
+                  clearTimeout(timer as NodeJS.Timeout);
+                  resolve(true);
+                },
+              };
+            });
           }
         }
         break;
@@ -377,7 +464,7 @@ const Game = ({
           );
           setNewDeck(remainingDeck);
           updatedGameState.newDeck = remainingDeck;
-          handleNewBoardCard(card);
+          handleNewBoardCard(card, event);
           setSuit("");
           updatedGameState.suit = "";
 
@@ -408,6 +495,44 @@ const Game = ({
             updatedGameState
           );
           !isSoundMuted ? playCardSound.play() : null;
+
+          resolveTimer();
+          timer = setTimeout(() => {
+            const drawnCard = gameService.getRandomCard(
+              updatedGameState.newDeck
+            );
+            updatedGameState.newDeck = updatedGameState.newDeck.filter(
+              (c) => c !== drawnCard
+            );
+            setNewDeck(updatedGameState.newDeck);
+            if (player1Turn) {
+              setPlayer1([...updatedGameState.player1, drawnCard as CardProps]);
+              updatedGameState.player1 = [
+                ...updatedGameState.player1,
+                drawnCard as CardProps,
+              ];
+            } else {
+              setPlayer2([...updatedGameState.player2, drawnCard as CardProps]);
+              updatedGameState.player2 = [
+                ...updatedGameState.player2,
+                drawnCard as CardProps,
+              ];
+            }
+            togglePlayerTurn();
+            gameService.updateGame(
+              socketService.socket as Socket,
+              updatedGameState
+            );
+            !isSoundMuted ? playCardSound.play() : null;
+          }, (remainingTime - 1) * 1000);
+          await new Promise((resolve) => {
+            timerPromiseRef.current = {
+              resolve: () => {
+                clearTimeout(timer as NodeJS.Timeout);
+                resolve(true);
+              },
+            };
+          });
         }
         break;
 
@@ -420,7 +545,7 @@ const Game = ({
               newBoardCard?.rank === "jack")) ||
           card.suit === suit
         ) {
-          handleNewBoardCard(card);
+          handleNewBoardCard(card, event);
           setSuit("");
           updatedGameState.suit = "";
 
@@ -440,6 +565,44 @@ const Game = ({
             updatedGameState
           );
           !isSoundMuted ? playCardSound.play() : null;
+
+          resolveTimer();
+          timer = setTimeout(() => {
+            const drawnCard = gameService.getRandomCard(
+              updatedGameState.newDeck
+            );
+            updatedGameState.newDeck = updatedGameState.newDeck.filter(
+              (c) => c !== drawnCard
+            );
+            setNewDeck(updatedGameState.newDeck);
+            if (player1Turn) {
+              setPlayer1([...updatedGameState.player1, drawnCard as CardProps]);
+              updatedGameState.player1 = [
+                ...updatedGameState.player1,
+                drawnCard as CardProps,
+              ];
+            } else {
+              setPlayer2([...updatedGameState.player2, drawnCard as CardProps]);
+              updatedGameState.player2 = [
+                ...updatedGameState.player2,
+                drawnCard as CardProps,
+              ];
+            }
+            togglePlayerTurn();
+            gameService.updateGame(
+              socketService.socket as Socket,
+              updatedGameState
+            );
+            !isSoundMuted ? playCardSound.play() : null;
+          }, (remainingTime - 1) * 1000);
+          await new Promise((resolve) => {
+            timerPromiseRef.current = {
+              resolve: () => {
+                clearTimeout(timer as NodeJS.Timeout);
+                resolve(true);
+              },
+            };
+          });
         }
         break;
 
@@ -459,7 +622,7 @@ const Game = ({
           togglePlayerTurn();
           updatedGameState.player1Turn = !player1Turn;
           updatedGameState.player2Turn = !player2Turn;
-          handleNewBoardCard(card);
+          handleNewBoardCard(card, event);
           setSuit("");
           updatedGameState.suit = "";
           setSuitSelector(false);
@@ -468,6 +631,7 @@ const Game = ({
             updatedGameState
           );
           !isSoundMuted ? playCardSound.play() : null;
+          resolveTimer();
         } else if (
           !suit &&
           (newBoardCard?.rank === "jack" ||
@@ -500,34 +664,96 @@ const Game = ({
           togglePlayerTurn();
           updatedGameState.player1Turn = !player1Turn;
           updatedGameState.player2Turn = !player2Turn;
-          handleNewBoardCard(card);
+          handleNewBoardCard(card, event);
           gameService.updateGame(
             socketService.socket as Socket,
             updatedGameState
           );
           !isSoundMuted ? playCardSound.play() : null;
+          resolveTimer();
         }
         break;
     }
     console.log(updatedGameState);
   };
+  //MARK: Functions
+  const updateSuit = (newSuit: Suits) => {
+    // sets suit when jcommand is played
+    // Resolve the existing promise if any (prevents accumulation)
+    setSuit(newSuit);
+    suitPromiseRef.current?.resolve(newSuit);
+    suitPromiseRef.current = null;
+  };
+  const resolveTimer = () => {
+    timerPromiseRef.current?.resolve(true);
+    timerPromiseRef.current = null;
+  };
+  const handleNewBoardCard = (card: CardProps, event: React.MouseEvent) => {
+    // removes played card from deck
+    // pushes old board card to deck
+    // sets played card as new board card
+    if (newBoardCard) {
+      setNewDeck((prevDeck) => [...prevDeck, newBoardCard]);
+      updatedGameState.newDeck = [
+        ...updatedGameState.newDeck,
+        updatedGameState.boardCard as CardProps,
+      ];
+    }
+    updatedGameState.boardCard = card;
+    const board = document.querySelector(".board-card");
+    const playerHand = document.querySelector(".player-hand-container");
+    const clickedCard = event.currentTarget as HTMLElement;
+    const cardClone = clickedCard.cloneNode(true) as HTMLElement;
+    cardClone.classList.add("card-move");
+    playerHand?.appendChild(cardClone);
+
+    console.log(clickedCard);
+    const clickedCardRect = clickedCard.getBoundingClientRect();
+    const targetRect = board?.getBoundingClientRect();
+    let targetX = 0;
+    let targetY = 0; // Get position
+    if (targetRect) {
+      targetX = targetRect.left - clickedCardRect.left;
+      targetY = targetRect.top - clickedCardRect.top;
+    }
+    cardClone.style.setProperty(
+      "--init-target-x",
+      `${clickedCardRect?.left}px`
+    );
+    cardClone.style.setProperty("--init-target-y", `${clickedCardRect?.top}px`);
+    // Set custom properties for target position
+    cardClone.style.setProperty("--target-x", `${targetX}px`);
+    cardClone.style.setProperty("--target-y", `${targetY}px`);
+    // Add the .card-move class for animation
+    cardClone.classList.add("card-move");
+
+    // Handle animation completion
+    setTimeout(() => {
+      setNewBoardCard(card);
+      cardClone.remove();
+    }, 500);
+  };
   const togglePlayerTurn = () => {
     if (player1Turn) {
       setPlayer1Turn(false);
+      updatedGameState.player1Turn = false;
       setPlayer2Turn(true);
+      updatedGameState.player2Turn = true;
     } else if (player2Turn) {
       setPlayer2Turn(false);
+      updatedGameState.player2Turn = false;
       setPlayer1Turn(true);
+      updatedGameState.player1Turn = true;
     }
   };
-  const playCard1 = (card: CardProps) => {
+  const playCard1 = (card: CardProps, event: React.MouseEvent) => {
     if (player1Turn) {
-      handleCardFunction(card, player1);
+      handleCardFunction(card, player1, event);
     }
   };
-  const playCard2 = (card: CardProps) => {
+  const playCard2 = (card: CardProps, event: React.MouseEvent) => {
     if (player2Turn) {
-      handleCardFunction(card, player2);
+      handleCardFunction(card, player2, event);
     }
   };
   const handleDeckClick1 = () => {
@@ -545,13 +771,11 @@ const Game = ({
         drawnCard as CardProps,
       ];
       setSuitSelector(false);
-      setPlayer1Turn(false);
-      updatedGameState.player1Turn = false;
-      setPlayer2Turn(true);
-      updatedGameState.player2Turn = true;
+      togglePlayerTurn();
 
       gameService.updateGame(socketService.socket as Socket, updatedGameState);
       !isSoundMuted ? playCardSound.play() : null;
+      resolveTimer();
     }
   };
   const handleDeckClick2 = () => {
@@ -569,12 +793,10 @@ const Game = ({
         drawnCard as CardProps,
       ];
       setSuitSelector(false);
-      setPlayer2Turn(false);
-      updatedGameState.player2Turn = false;
-      setPlayer1Turn(true);
-      updatedGameState.player1Turn = true;
+      togglePlayerTurn();
       gameService.updateGame(socketService.socket as Socket, updatedGameState);
       !isSoundMuted ? playCardSound.play() : null;
+      resolveTimer();
     }
   };
   const leaveGameFunction = () => {
@@ -598,18 +820,7 @@ const Game = ({
     }
   };
 
-  useEffect(() => {
-    handleGameWin();
-  }, [player1, player2]);
-
-  const cardArray1: CardProps[] = Array.from(
-    { length: player1.length },
-    () => ({ suit: "card", rank: "cover", id: uuidv4() })
-  );
-  const cardArray2: CardProps[] = Array.from(
-    { length: player2.length },
-    () => ({ suit: "card", rank: "cover", id: uuidv4() })
-  );
+  //MARK: - JSX
   return (
     <>
       <Dashboard>

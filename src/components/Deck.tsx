@@ -7,7 +7,7 @@ interface IDeckProps {
 const Deck = ({ onCardClick }: IDeckProps) => {
   return (
     <div className="cursor-pointer" onClick={onCardClick}>
-      <Card suit="card" rank="cover" id="deck" />
+      <Card suit="card" rank="cover" id="cover" />
     </div>
   );
 };

@@ -5,7 +5,11 @@ interface IBoardCard {
   card: CardProps;
 }
 const BoardCard = ({ card }: IBoardCard) => {
-  return <Card suit={card.suit} rank={card.rank} id={card.id} />;
+  return (
+    <div className="board-card">
+      <Card suit={card.suit} rank={card.rank} id="cover" />
+    </div>
+  );
 };
 
 export default BoardCard;

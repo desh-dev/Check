@@ -91,7 +91,7 @@ public async joinGameRoom(socket: Socket, roomId: string, opponent2: string): Pr
     });
   }
 
-public updateGame(socket: Socket, gameState: any) {
+public async updateGame(socket: Socket, gameState: any) {
     socket.emit("update_game_state", gameState );
   }
 
