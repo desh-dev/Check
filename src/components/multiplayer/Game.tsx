@@ -137,10 +137,6 @@ const Game = ({
           setSuit(suit),
           (updatedGameState.suit = suit);
         shuffleCardsSound.play();
-        const playerHands = document.querySelectorAll(".player-hand");
-        playerHands.forEach((hand) => {
-          hand.classList.add("animate-card");
-        });
       }
     );
 
@@ -701,7 +697,7 @@ const Game = ({
     }
     updatedGameState.boardCard = card;
     const board = document.querySelector(".board-card");
-    const playerHand = document.querySelector(".player-hand-container");
+    const playerHand = document.querySelector(".player-hand");
     const clickedCard = event.currentTarget as HTMLElement;
     const cardClone = clickedCard.cloneNode(true) as HTMLElement;
     cardClone.classList.add("card-move");
@@ -859,12 +855,14 @@ const Game = ({
             </div>
           </DialogBox>
         )}
-        <div className="flex flex-col w-75% gap-1 justify-center">
-          {currentUser === "player1" ? (
-            <PlayerHand playerTurn={false} playerHand={cardArray2} />
-          ) : (
-            <PlayerHand playerTurn={false} playerHand={cardArray1} />
-          )}
+        <div className="flex flex-col gap-1 justify-center">
+          <div className="flex w-full justify-center">
+            {currentUser === "player1" ? (
+              <PlayerHand playerTurn={false} playerHand={cardArray2} />
+            ) : (
+              <PlayerHand playerTurn={false} playerHand={cardArray1} />
+            )}
+          </div>
           <div className="flex w-full justify-center">
             <p className="text-white text-sm font-semibold">{opponentName}</p>
           </div>
@@ -895,23 +893,25 @@ const Game = ({
             {suitSelector && <SuitSelector updateSuit={updateSuit} />}
           </div>
         </div>
-        <div className="flex flex-col w-75% gap-1 justify-center">
+        <div className="flex flex-col gap-1 justify-center">
           <div className="flex w-full justify-center">
             <p className="text-white text-sm font-semibold">{playerName}</p>
           </div>
-          {currentUser === "player1" ? (
-            <PlayerHand
-              playerTurn={player1Turn}
-              playerHand={player1}
-              handleCardClick={playCard1}
-            />
-          ) : (
-            <PlayerHand
-              playerTurn={player2Turn}
-              playerHand={player2}
-              handleCardClick={playCard2}
-            />
-          )}
+          <div className="flex w-full justify-center">
+            {currentUser === "player1" ? (
+              <PlayerHand
+                playerTurn={player1Turn}
+                playerHand={player1}
+                handleCardClick={playCard1}
+              />
+            ) : (
+              <PlayerHand
+                playerTurn={player2Turn}
+                playerHand={player2}
+                handleCardClick={playCard2}
+              />
+            )}
+          </div>
         </div>
         {gameWon && (
           <DialogBox isOpen={gameWon}>

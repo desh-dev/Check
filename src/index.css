@@ -144,3 +144,6 @@ transform: translateX(0) translateY(0);
   top: var(--init-target-y); /* Initial Y position from clicked card */
   left: var(--init-target-x); /* Initial X position from clicked card */
 }
+.player-hand{
+  transition: transform 1s ease;
+}

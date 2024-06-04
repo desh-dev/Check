@@ -4,7 +4,7 @@ import BoardCard from "../BoardCard";
 import { CardProps } from "../Card";
 import gameService from "@/services/gameService";
 import { CardNumber } from "../Practice";
-import { useContext, useEffect, useRef, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import SuitSelector from "../SuitSelector";
 import { Club, Spade, Heart, Diamond } from "lucide-react";
 import { Button } from "../ui/button";
@@ -38,7 +38,7 @@ const Game = ({ cardNumber }: IGamePractice) => {
     null
   );
 
-  const { setPractice, setCardNumber } = useContext(gameContext);
+  const { practice, setPractice, setCardNumber } = useContext(gameContext);
   const updateSuit = (newSuit: Suits) => {
     // sets suit when jcommand is played
     // Resolve the existing promise if any (prevents accumulation)
@@ -48,21 +48,56 @@ const Game = ({ cardNumber }: IGamePractice) => {
     suitPromiseRef.current = null;
   };
 
-  const handleNewBoardCard = (card: CardProps) => {
+  const handleNewBoardCard = (card: CardProps, event: React.MouseEvent) => {
     // removes played card from deck
     // pushes old board card to deck
     // sets played card as new board card
     if (newBoardCard) {
       setNewDeck((prevDeck) => [...prevDeck, newBoardCard]);
     }
-    setNewBoardCard(card);
+    const board = document.querySelector(".board-card");
+    const playerHand = document.querySelector(".player-hand");
+    const clickedCard = event.currentTarget as HTMLElement;
+    const cardClone = clickedCard.cloneNode(true) as HTMLElement;
+    cardClone.classList.add("card-move");
+    playerHand?.appendChild(cardClone);
+
+    console.log(clickedCard);
+    const clickedCardRect = clickedCard.getBoundingClientRect();
+    const targetRect = board?.getBoundingClientRect();
+    let targetX = 0;
+    let targetY = 0; // Get position
+    if (targetRect) {
+      targetX = targetRect.left - clickedCardRect.left;
+      targetY = targetRect.top - clickedCardRect.top;
+    }
+    cardClone.style.setProperty(
+      "--init-target-x",
+      `${clickedCardRect?.left}px`
+    );
+    cardClone.style.setProperty("--init-target-y", `${clickedCardRect?.top}px`);
+    // Set custom properties for target position
+    cardClone.style.setProperty("--target-x", `${targetX}px`);
+    cardClone.style.setProperty("--target-y", `${targetY}px`);
+    // Add the .card-move class for animation
+    cardClone.classList.add("card-move");
+
+    // Handle animation completion
+    setTimeout(() => {
+      setNewBoardCard(card);
+      cardClone.remove();
+    }, 500);
   };
 
-  const handleCardFunction = async (card: CardProps, player: CardProps[]) => {
+  const handleCardFunction = async (
+    card: CardProps,
+    player: CardProps[],
+    event: React.MouseEvent
+  ) => {
     switch (card.rank) {
       case "jack":
         setSuitSelector(true);
-        handleNewBoardCard(card);
+        handleNewBoardCard(card, event);
         setPlayer1Turn(false);
         setPlayer2Turn(false);
         const playerOne = player1;
@@ -98,7 +133,7 @@ const Game = ({ cardNumber }: IGamePractice) => {
               newDeck
             );
             setNewDeck(remainingDeck);
-            handleNewBoardCard(card);
+            handleNewBoardCard(card, event);
             setSuit("");
 
             // Add the drawn card to the current player's hand
@@ -131,7 +166,7 @@ const Game = ({ cardNumber }: IGamePractice) => {
               newDeck
             );
             setNewDeck(remainingDeck);
-            handleNewBoardCard(card);
+            handleNewBoardCard(card, event);
             setSuit("");
 
             // Add the drawn cards to the opponent's hand
@@ -163,7 +198,7 @@ const Game = ({ cardNumber }: IGamePractice) => {
             newDeck
           );
           setNewDeck(remainingDeck);
-          handleNewBoardCard(card);
+          handleNewBoardCard(card, event);
           setSuit("");
 
           // Add the drawn cards to the opponent's hand
@@ -187,7 +222,7 @@ const Game = ({ cardNumber }: IGamePractice) => {
               newBoardCard?.rank === "jack")) ||
           card.suit === suit
         ) {
-          handleNewBoardCard(card);
+          handleNewBoardCard(card, event);
           setSuit("");
           player === player1
             ? setPlayer1(player1.filter((c) => c !== card))
@@ -202,7 +237,7 @@ const Game = ({ cardNumber }: IGamePractice) => {
             ? setPlayer1(player1.filter((c) => c !== card))
             : setPlayer2(player2.filter((c) => c !== card));
           togglePlayerTurn();
-          handleNewBoardCard(card);
+          handleNewBoardCard(card, event);
           setSuit("");
           setSuitSelector(false);
         } else if (
@@ -227,7 +262,7 @@ const Game = ({ cardNumber }: IGamePractice) => {
             ? setPlayer1(player1.filter((c) => c !== card))
             : setPlayer2(player2.filter((c) => c !== card));
           togglePlayerTurn();
-          handleNewBoardCard(card);
+          handleNewBoardCard(card, event);
         }
         break;
     }
@@ -242,14 +277,14 @@ const Game = ({ cardNumber }: IGamePractice) => {
       setPlayer1Turn(true);
     }
   };
-  const playCard1 = (card: CardProps) => {
+  const playCard1 = (card: CardProps, event: React.MouseEvent) => {
     if (player1Turn) {
-      handleCardFunction(card, player1);
+      handleCardFunction(card, player1, event);
     }
   };
-  const playCard2 = (card: CardProps) => {
+  const playCard2 = (card: CardProps, event: React.MouseEvent) => {
     if (player2Turn) {
-      handleCardFunction(card, player2);
+      handleCardFunction(card, player2, event);
     }
   };
   const handleDeckClick = () => {
@@ -290,9 +325,10 @@ const Game = ({ cardNumber }: IGamePractice) => {
     <>
       <div className="w-full flex justify-start pl-2 pb-0">
         <BackButton
-          state={cardNumber}
-          setState={setCardNumber}
+          state={practice}
+          setState={setPractice}
           buttonVariant={"destructive"}
+          toggle={() => setCardNumber(null)}
         >
           Quit
         </BackButton>
