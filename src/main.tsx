@@ -5,15 +5,22 @@ import "./index.css";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Multiplayer from "./components/Multiplayer.tsx";
 import VsFriend from "./components/VsFriend.tsx";
+import Practice from "./components/Practice.tsx";
 
 const router = createBrowserRouter([
   {
     path: "/",
     element: <App />,
-  },
-  {
-    path: "/multiplayer",
-    element: <Multiplayer />,
+    children: [
+      {
+        path: "/practice",
+        element: <Practice />,
+      },
+      {
+        path: "/multiplayer",
+        element: <Multiplayer />,
+      },
+    ],
   },
   {
     path: "/vsFriend",

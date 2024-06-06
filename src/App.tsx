@@ -4,16 +4,18 @@ import { IGameContextProps } from "./gameContext";
 import GameContext from "./gameContext";
 import ModeSelect from "./components/ModeSelect";
 import { CardNumber } from "./components/Practice";
-import BackButton from "./components/BackButton";
-import Practice from "./components/Practice.tsx";
+import { Outlet } from "react-router-dom";
 
 function App() {
+  const [auth, setAuth] = useState({});
   const [cardNumber, setCardNumber] = useState<CardNumber>(null);
   const [multiplayer, setMultiplayer] = useState(false);
   const [vsAI, setVsAI] = useState(false);
   const [practice, setPractice] = useState(false);
 
   const gameContextValue: IGameContextProps = {
+    auth,
+    setAuth,
     cardNumber,
     setCardNumber,
     multiplayer,
@@ -28,19 +30,7 @@ function App() {
     <GameContext.Provider value={gameContextValue}>
       <>
         <Dashboard>
-          {!vsAI && !practice && <ModeSelect />}
-          {practice && (
-            <Practice>
-              <BackButton state={practice} setState={setPractice}>
-                Back
-              </BackButton>
-            </Practice>
-          )}
-          {/* {vsAI && (
-            <VsAI>
-              <Back toggle={() => toggleModeSelect(setVsAI)} state={vsAI} setState={setVsAI} />
-            </VsAI>
-          )} */}
+          {!vsAI && !practice && !multiplayer ? <ModeSelect /> : <Outlet />}
         </Dashboard>
       </>
     </GameContext.Provider>

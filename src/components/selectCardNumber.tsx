@@ -12,10 +12,12 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Link } from "react-router-dom";
+import gameContext from "@/gameContext";
+import { useContext } from "react";
 
 interface SelectCardNumberProps {
   onSubmit: (data: z.infer<typeof FormSchema>) => void;
-  children?: React.ReactNode;
 }
 
 const FormSchema = z.object({
@@ -26,7 +28,8 @@ const FormSchema = z.object({
     }),
 });
 
-const SelectCardNumber = ({ onSubmit, children }: SelectCardNumberProps) => {
+const SelectCardNumber = ({ onSubmit }: SelectCardNumberProps) => {
+  const { setCardNumber, setPractice } = useContext(gameContext);
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
   });
@@ -74,7 +77,14 @@ const SelectCardNumber = ({ onSubmit, children }: SelectCardNumberProps) => {
           <Button variant="secondary" type="submit">
             Start
           </Button>
-          {children}
+          <Button
+            onClick={() => {
+              setCardNumber(null);
+              setPractice(false);
+            }}
+          >
+            <Link to="/">Back</Link>
+          </Button>
         </div>
       </form>
     </Form>

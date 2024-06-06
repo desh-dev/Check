@@ -1,6 +1,8 @@
 import React from "react";
 
 export interface IGameContextProps {
+  auth:Object;
+  setAuth: (auth:Object) => void;
   cardNumber: number | null;
   setCardNumber: (cardNumber: number | null) => void;
   multiplayer: boolean;
@@ -12,6 +14,8 @@ export interface IGameContextProps {
 }
 
 const defaultState: IGameContextProps = {
+  auth: {},
+  setAuth: () => {},
   cardNumber: null,
   setCardNumber: () => {},
   multiplayer: false,
