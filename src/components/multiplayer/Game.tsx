@@ -41,7 +41,7 @@ const Game = ({
   opponentName,
 }: IGameMultiplayer) => {
   //MARK: - Variables
-  const deck = gameService.generateFullDeck();
+  let deck = gameService.generateFullDeck();
   const { playerHands, boardCard, remainingDeck } = gameService.distributeCards(
     deck,
     2,
@@ -64,6 +64,7 @@ const Game = ({
   const [leaveGame, setLeaveGame] = useState(false);
   const [gameLeft, setGameLeft] = useState(false);
   const [isSoundMuted, setIsSoundMuted] = useState(false);
+  const [playAgain, setPlayAgain] = useState(false);
   const suitPromiseRef = useRef<{ resolve: (value: Suits) => void } | null>(
     null
   );
@@ -114,18 +115,18 @@ const Game = ({
         gameWon,
         player1,
         player2,
-        player1Turn,
-        player2Turn,
+        // player1Turn,
+        // player2Turn,
         boardCard,
         newDeck,
         suit,
       }) => {
         setGameWon(gameWon),
           (updatedGameState.gameWon = gameWon),
-          setPlayer1Turn(player1Turn),
-          (updatedGameState.player1Turn = player1Turn),
-          setPlayer2Turn(player2Turn),
-          (updatedGameState.player2Turn = player2Turn),
+          setPlayer1Turn(true),
+          (updatedGameState.player1Turn = true),
+          setPlayer2Turn(false),
+          (updatedGameState.player2Turn = false),
           setPlayer1(player1),
           (updatedGameState.player1 = player1),
           setPlayer2(player2),
@@ -136,6 +137,7 @@ const Game = ({
           (updatedGameState.newDeck = newDeck),
           setSuit(suit),
           (updatedGameState.suit = suit);
+        setPlayAgain(false);
         shuffleCardsSound.play();
       }
     );
@@ -144,7 +146,6 @@ const Game = ({
       "update_game_state",
       ({
         gameWon,
-        winner,
         player1,
         player2,
         player1Turn,
@@ -154,7 +155,6 @@ const Game = ({
         suit,
       }) => {
         setGameWon(gameWon);
-        setWinner(winner);
         setPlayer1Turn(player1Turn);
         setPlayer2Turn(player2Turn);
         setPlayer1(player1);
@@ -164,6 +164,12 @@ const Game = ({
         setSuit(suit);
       }
     );
+    socketService.socket?.on("game_won", ({ winner }) => {
+      setGameWon(true);
+      setWinner(winner);
+      setPlayer1Turn(false);
+      setPlayer2Turn(false);
+    });
     socketService.socket?.on("room_left", () => {
       setGameLeft(true);
       setPlayer1Turn(false);
@@ -183,7 +189,6 @@ const Game = ({
     switch (card.rank) {
       case "jack":
         const playerOne = player1;
-        setSuitSelector(true);
         handleNewBoardCard(card, event);
         setPlayer1Turn(false);
         setPlayer2Turn(false);
@@ -193,12 +198,27 @@ const Game = ({
           updatedGameState.player1 = updatedGameState.player1.filter(
             (c) => c !== card
           );
+          if (player1.length === 1) {
+            gameService.updateGame(
+              socketService.socket as Socket,
+              updatedGameState
+            );
+            return;
+          }
         } else {
           setPlayer2(updatedGameState.player2.filter((c) => c !== card));
           updatedGameState.player2 = updatedGameState.player2.filter(
             (c) => c !== card
           );
+          if (player2.length === 1) {
+            gameService.updateGame(
+              socketService.socket as Socket,
+              updatedGameState
+            );
+            return;
+          }
         }
+        setSuitSelector(true);
         !isSoundMuted ? playCardSound.play() : null;
         let selectedSuit: Suits | null = null;
         timer = setTimeout(() => {
@@ -621,7 +641,6 @@ const Game = ({
           handleNewBoardCard(card, event);
           setSuit("");
           updatedGameState.suit = "";
-          setSuitSelector(false);
           gameService.updateGame(
             socketService.socket as Socket,
             updatedGameState
@@ -697,11 +716,10 @@ const Game = ({
     }
     updatedGameState.boardCard = card;
     const board = document.querySelector(".board-card");
-    const playerHand = document.querySelector(".player-hand");
     const clickedCard = event.currentTarget as HTMLElement;
     const cardClone = clickedCard.cloneNode(true) as HTMLElement;
     cardClone.classList.add("card-move");
-    playerHand?.appendChild(cardClone);
+    board?.appendChild(cardClone);
 
     console.log(clickedCard);
     const clickedCardRect = clickedCard.getBoundingClientRect();
@@ -804,16 +822,49 @@ const Game = ({
   };
 
   const handleGameWin = () => {
-    if (player1.length === 0) {
-      alert("Player 1 Wins");
+    if (player1.length === 0 || player2.length === 0) {
       setGameWon(true);
       setPlayer2Turn(false);
-    }
-    if (player2.length === 0) {
-      alert("Player 2 Wins");
-      setGameWon(true);
       setPlayer1Turn(false);
+      console.log(player1.length, currentUser);
+      player1.length === 0 && currentUser === "player1"
+        ? setWinner("You Win!")
+        : player2.length === 0 && currentUser === "player2"
+        ? setWinner("You Win!")
+        : setWinner("You Lose!");
     }
+  };
+  const reset = () => {
+    deck = gameService.generateFullDeck();
+    const { playerHands, boardCard, remainingDeck } =
+      gameService.distributeCards(deck, 2, 7);
+    setPlayer1(playerHands[0]);
+    updatedGameState.player1 = playerHands[0];
+    setPlayer2(playerHands[1]);
+    updatedGameState.player2 = playerHands[1];
+    setNewDeck(remainingDeck || []);
+    updatedGameState.newDeck = remainingDeck || [];
+    setNewBoardCard(boardCard);
+    updatedGameState.boardCard = boardCard;
+    setPlayer1Turn(false);
+    updatedGameState.player1Turn = false;
+    setPlayer2Turn(false);
+    updatedGameState.player2Turn = false;
+    setGameWon(false);
+    updatedGameState.gameWon = false;
+    setLeaveGame(false);
+    setGameLeft(false);
+    setWinner("");
+    setRemainingTime(timeLimit);
+    setSuitSelector(false);
+    setSuit("");
+    suitPromiseRef.current = null;
+    timerPromiseRef.current = null;
+  };
+  const playAgainFunction = async () => {
+    reset();
+    setPlayAgain(true);
+    gameService.playAgain(socketService.socket as Socket, updatedGameState);
   };
 
   //MARK: - JSX
@@ -913,23 +964,37 @@ const Game = ({
             )}
           </div>
         </div>
-        {gameWon && (
-          <DialogBox isOpen={gameWon}>
+        {gameWon && !gameLeft && (
+          <DialogBox isOpen={gameWon} title={winner}>
             <div className="flex gap-5 flex-col pt-10 pb-10 rounded-md">
-              <Button variant="secondary" onClick={() => {}}>
-                Back to Main Menu
+              <Button variant="secondary">
+                <Link to="/multiplayer">Back to Main Menu</Link>
               </Button>
-              <Button variant="secondary">Play Again</Button>
+              <Button variant="secondary" onClick={playAgainFunction}>
+                Play Again
+              </Button>
             </div>
           </DialogBox>
         )}
         {gameLeft && (
-          <DialogBox isOpen={gameLeft} title="You Win!">
+          <DialogBox isOpen={gameLeft} title={!gameWon ? "You Win!" : ""}>
             <div className="w-full flex flex-col gap-5 justify-center p-4 rounded-md">
-              <p>Opponent Left Game</p>
+              <p>Opponent Left {gameWon ? "Room" : "Game"}</p>
               <Link to={"/"} className="w-full flex justify-center">
                 <Button variant="ghost">
                   <Home />
+                </Button>
+              </Link>
+            </div>
+          </DialogBox>
+        )}
+        {playAgain && !gameLeft && (
+          <DialogBox isOpen={playAgain}>
+            <div className="w-full flex flex-col gap-5 justify-center p-4 rounded-md">
+              <p className="font-semibold">Waiting for Opponent...</p>
+              <Link to={"/"} className="w-full flex justify-center">
+                <Button variant="ghost">
+                  <X />
                 </Button>
               </Link>
             </div>
