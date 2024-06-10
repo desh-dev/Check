@@ -1,8 +1,14 @@
 import React from "react";
 
+export interface IAuth {
+  email?: string;
+  roles?: string[];
+  accessToken?: string;
+}
+
 export interface IGameContextProps {
-  auth:Object;
-  setAuth: (auth:Object) => void;
+  auth: IAuth;
+  setAuth: React.Dispatch<React.SetStateAction<IAuth>>;
   cardNumber: number | null;
   setCardNumber: (cardNumber: number | null) => void;
   multiplayer: boolean;

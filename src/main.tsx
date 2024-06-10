@@ -6,6 +6,8 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Multiplayer from "./components/Multiplayer.tsx";
 import VsFriend from "./components/VsFriend.tsx";
 import Practice from "./components/Practice.tsx";
+import LoginForm from "./components/Login.tsx";
+import SignUpForm from "./components/SignUp.tsx";
 
 const router = createBrowserRouter([
   {
@@ -25,6 +27,14 @@ const router = createBrowserRouter([
   {
     path: "/vsFriend",
     element: <VsFriend />,
+  },
+  {
+    path: "/login",
+    element: <LoginForm />,
+  },
+  {
+    path: "/signup",
+    element: <SignUpForm />,
   },
 ]);
 
