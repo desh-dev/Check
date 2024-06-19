@@ -1,13 +1,14 @@
 // gameComponents.ts
 
 import { CardProps } from "@/components/Card";
+import { SupabaseClient, User } from "@supabase/supabase-js";
 import { Socket } from "socket.io-client";
 import { v4 as uuidv4 } from 'uuid';
 
 class GameService {
 
     public generateFullDeck(): CardProps[] {
-        const suits = ['Hearts', 'Diamonds', 'Clubs', 'Spades'];
+        const suits = ['hearts', 'diamonds', 'clubs', 'spades'];
         const ranks = [
             '2', '3', '4', '5', '6', '7', '8', '9', '10', 'jack', 'queen', 'king', 'ace'
         ];
@@ -75,9 +76,9 @@ class GameService {
     return {drawnCards: drawnCardArr, remainingDeck};
 }
 
-public async createGameRoom(socket: Socket, roomId: string, opponent1: string): Promise<boolean> {
+public async createGameRoom(socket: Socket, roomId: string, opponent1: string, stake?: number | null): Promise<boolean> {
     return new Promise((rs, rj) => {
-      socket.emit("create_room", { roomId, opponent1 });
+      socket.emit("create_room", { roomId, opponent1, stake });
       socket.on("room_created", () => rs(true));
       socket.on("create_room_error", ({ error }) => rj(error));
     });
@@ -87,7 +88,6 @@ public async joinGameRoom(socket: Socket, roomId: string, opponent2: string): Pr
       socket.emit("join_room", { roomId, opponent2 });
       socket.on("room_joined", () => rs(true));
       socket.on("room_join_error", ({ error }) => rj(error));
-      socket.on("no_room", ({ error }) => rj(error));
     });
   }
 
@@ -97,7 +97,39 @@ public async updateGame(socket: Socket, gameState: any) {
 public async playAgain(socket: Socket, gameState: any) {
     socket.emit("play_again", gameState );
   }
-
+public async leaveRoom (socket: Socket, roomName: string) {
+  socket.emit("leave_room", { roomName });
+}
+public async insufficientBalance (socket: Socket, roomName: string) {
+    socket.emit("insufficient_balance", {roomName});
+  }
+public async computeNewBalance (supabase: SupabaseClient<any, "public", any>, user: User | null | undefined, tempBalance: number | null | undefined, winnings: number) {
+    if (user && tempBalance && winnings > 0) {
+      const newBalance = tempBalance - winnings * 0.1;
+      
+      const { data, error } = await supabase
+      .from('profiles')
+      .update({ account_balance: newBalance })
+      .eq('id', user.id)
+      .select()
+      if (error) {
+        throw new Error (error.message);
+      }
+      console.log(data);
+      return newBalance;
+    } else if (user && tempBalance && winnings <= 0) {
+      const { data, error } = await supabase
+      .from('profiles')
+      .update({ account_balance: tempBalance })
+      .eq('id', user?.id)
+      .select()
+      if (error) {
+        throw new Error (error.message);
+      }
+      console.log(data);
+      return tempBalance;
+    }
+  }
 }
 
 export default new GameService;

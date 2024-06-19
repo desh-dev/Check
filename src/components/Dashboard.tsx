@@ -1,4 +1,3 @@
-//import Link from "next/link"
 import History from "./History";
 import { CircleUser, Menu, Club, Search } from "lucide-react";
 
@@ -14,12 +13,16 @@ import {
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import Rules from "./Rules";
+import { Link, Outlet } from "react-router-dom";
+import { useAuth } from "../hooks/Auth";
 
 interface DashboardProps {
   children?: React.ReactNode;
 }
 
 const Dashboard = ({ children }: DashboardProps) => {
+  const { user, accountBalance, signOut } = useAuth();
+
   return (
     <div className="grid min-h-screen w-full md:grid-cols-[100px_1fr] lg:grid-cols-[200px_1fr]">
       <div className="hidden bg-muted/40 md:block">
@@ -30,6 +33,11 @@ const Dashboard = ({ children }: DashboardProps) => {
           </div>
           <div className="flex-1">
             <nav className="grid items-start px-2 text-sm font-medium lg:px-4">
+              {user && (
+                <h2 className="font-bold text-lg mb-2">
+                  {accountBalance} FCFA
+                </h2>
+              )}
               <History />
               <Rules />
             </nav>
@@ -52,6 +60,11 @@ const Dashboard = ({ children }: DashboardProps) => {
             <SheetContent side="left" className="flex flex-col">
               <nav className="grid gap-2 text-lg font-medium">
                 <div className="mt-5">
+                  {user && (
+                    <h2 className="font-bold text-lg mb-2">
+                      {accountBalance} FCFA
+                    </h2>
+                  )}
                   <History />
                   <Rules />
                 </div>
@@ -70,26 +83,36 @@ const Dashboard = ({ children }: DashboardProps) => {
               </div>
             </form>
           </div>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="secondary" size="icon" className="rounded-full">
-                <CircleUser className="h-5 w-5" />
-                <span className="sr-only">Toggle user menu</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>My Account</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>Settings</DropdownMenuItem>
-              <DropdownMenuItem>Support</DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>Logout</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          {user ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="secondary"
+                  size="icon"
+                  className="rounded-full"
+                >
+                  <CircleUser className="h-5 w-5" />
+                  <span className="sr-only">Toggle user menu</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem>Settings</DropdownMenuItem>
+                <DropdownMenuItem>Support</DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={signOut}>Logout</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <Button className="rounded-lg">
+              <Link to={"/login"}>Log in</Link>
+            </Button>
+          )}
         </header>
         <main className="flex flex-1 border shadow-lg board">
           <div className="flex flex-1 flex-col gap-4 items-center justify-around">
-            {children}
+            {children ? children : <Outlet />}{" "}
           </div>
         </main>
       </div>

@@ -6,27 +6,30 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Multiplayer from "./components/Multiplayer.tsx";
 import VsFriend from "./components/VsFriend.tsx";
 import Practice from "./components/Practice.tsx";
-import LoginForm from "./components/Login.tsx";
-import SignUpForm from "./components/SignUp.tsx";
+import LoginForm from "./routes/Login.tsx";
+import SignUpForm from "./routes/SignUp.tsx";
+import ConfirmEmail from "./routes/ConfirmEmail.tsx";
+import ErrorPage from "./components/ErrorPage.tsx";
 
 const router = createBrowserRouter([
   {
     path: "/",
     element: <App />,
+    errorElement: <ErrorPage />,
     children: [
       {
-        path: "/practice",
+        path: "practice",
         element: <Practice />,
       },
       {
-        path: "/multiplayer",
+        path: "multiplayer",
         element: <Multiplayer />,
       },
+      {
+        path: "multiplayer/vs-friend",
+        element: <VsFriend />,
+      },
     ],
-  },
-  {
-    path: "/vsFriend",
-    element: <VsFriend />,
   },
   {
     path: "/login",
@@ -35,6 +38,10 @@ const router = createBrowserRouter([
   {
     path: "/signup",
     element: <SignUpForm />,
+  },
+  {
+    path: "signup/confirm-email",
+    element: <ConfirmEmail />,
   },
 ]);
 

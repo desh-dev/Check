@@ -8,14 +8,10 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
-import useAuth from "../hooks/useAuth";
-import axios from "@/services/axios";
-import useToggle from "@/hooks/useToggle";
 import {
   Form,
   FormControl,
@@ -23,11 +19,10 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "./ui/form";
-import { LoadingButton } from "./ui/loading-button";
-
-const LOGIN_URL = "/auth";
-
+} from "../components/ui/form";
+import { LoadingButton } from "../components/ui/loading-button";
+import supabase from "@/config/supabaseClient";
+import ErrorMessage from "@/components/ErrorMessage";
 const LoginForm = () => {
   const FormSchema = z.object({
     email: z.string().email({ message: "Invalid email address" }).min(1, {
@@ -47,57 +42,50 @@ const LoginForm = () => {
 
   const [errMsg, setErrMsg] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [check, toggleCheck] = useToggle("persist", false);
-  const { setAuth } = useAuth();
 
-  const login = async (data: z.infer<typeof FormSchema>) => {
-    if (!data.email || data.email.trim() === "" || !data.password) {
+  const login = async (formData: z.infer<typeof FormSchema>) => {
+    if (!formData.email || formData.email.trim() === "" || !formData.password) {
       return;
     }
 
     setIsLoading(true);
     setErrMsg("");
 
-    try {
-      const response = await axios.post(
-        LOGIN_URL,
-        JSON.stringify({ email: data.email, password: data.password }),
-        {
-          headers: { "Content-Type": "application/json" },
-          withCredentials: true,
+    const { error } = await supabase.auth.signInWithPassword({
+      email: formData.email,
+      password: formData.password,
+    });
+
+    if (error) {
+      if (error.message === "Email not confirmed") {
+        const { error: resendError } = await supabase.auth.resend({
+          type: "signup",
+          email: formData.email,
+          options: {
+            emailRedirectTo: "localhost:3000",
+          },
+        });
+        if (resendError) {
+          throw resendError;
         }
-      );
-      const accessToken = response?.data?.accessToken;
-      setAuth({ email: data.email, accessToken });
-      navigate(from, { replace: true });
-    } catch (err: any) {
-      if (!err?.response) {
-        setErrMsg("No Server Response");
-      } else if (err.response?.status === 400) {
-        setErrMsg("Missing Username or Password");
-      } else if (err.response?.status === 401) {
-        setErrMsg("Unauthorized");
-      } else {
-        setErrMsg("Login Failed");
+        navigate("/signup/confirm-email");
+        return;
       }
-      // errRef.current?.focus();
+      setErrMsg(error.message);
+      setIsLoading(false);
+      console.log(error);
+      return;
     }
 
     setIsLoading(false);
+    navigate(from, { replace: true });
   };
 
   return (
-    <div className="w-full h-full flex flex-col justify-center align-center">
-      <p
-        className={
-          errMsg
-            ? "block p-3 w-full flex justify-center font-semibold text-sm text-red-500 bg-red-100"
-            : "hidden"
-        }
-        aria-live="assertive"
-      >
-        {errMsg}
-      </p>
+    <div
+      className="w-full h-full flex flex-col gap-1 justify-center align-center"
+      style={{ height: "100vh", width: "100vw" }}
+    >
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(login)}
@@ -170,16 +158,6 @@ const LoginForm = () => {
                     <p>Login with Google</p>
                   </LoadingButton>
                 )}
-                <div className="flex gap-1 w-full justify-center">
-                  <Label htmlFor="persist">Trust this device</Label>{" "}
-                  <Input
-                    id="persist"
-                    type="checkbox"
-                    onChange={toggleCheck}
-                    checked={check}
-                    className="w-4 h-4"
-                  />
-                </div>
                 <div className="mt-4 text-center text-sm">
                   Don&apos;t have an account?{" "}
                   <Link to="/signup" className="underline">
@@ -190,6 +168,7 @@ const LoginForm = () => {
             </CardContent>
           </Card>
         </form>
+        {errMsg && <ErrorMessage message={errMsg} />}
       </Form>
     </div>
   );

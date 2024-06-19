@@ -11,12 +11,12 @@ const PlayerHand = ({
   playerHand,
   handleCardClick,
 }: PlayerHandProps) => {
-  const overlapSmall =
-    (playerHand?.length as number) < 8
-      ? -20
-      : (playerHand?.length as number) <= 9
-      ? -26
-      : -30;
+  // const overlapSmall =
+  //   (playerHand?.length as number) < 8
+  //     ? -20
+  //     : (playerHand?.length as number) <= 9
+  //     ? -26
+  //     : -30;
 
   return (
     <div className="player-hand max-w-[75%] flex w-full justify-center">
@@ -28,7 +28,7 @@ const PlayerHand = ({
               handleCardClick?.(card, event)
             }
             className={`relative ${
-              index !== 0 && `ml-[${overlapSmall}px] md:ml-[-20px]`
+              index !== 0 && `ml-[-25px] md:ml-[-25px]`
             } z-${index} ${playerTurn ? "cursor-pointer" : ""}`}
           >
             <Card {...card} />

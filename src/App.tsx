@@ -4,36 +4,35 @@ import { IGameContextProps } from "./gameContext";
 import GameContext from "./gameContext";
 import ModeSelect from "./components/ModeSelect";
 import { CardNumber } from "./components/Practice";
-import { Outlet } from "react-router-dom";
+import { useLocation } from "react-router-dom";
+import { AuthProvider } from "./hooks/Auth";
 
 function App() {
   const [auth, setAuth] = useState({});
   const [cardNumber, setCardNumber] = useState<CardNumber>(null);
-  const [multiplayer, setMultiplayer] = useState(false);
-  const [vsAI, setVsAI] = useState(false);
-  const [practice, setPractice] = useState(false);
 
   const gameContextValue: IGameContextProps = {
     auth,
     setAuth,
     cardNumber,
     setCardNumber,
-    multiplayer,
-    setMultiplayer,
-    vsAI,
-    setVsAI,
-    practice,
-    setPractice,
   };
+  const location = useLocation();
+
+  const shouldRenderModeSelect = location.pathname === "/";
 
   return (
-    <GameContext.Provider value={gameContextValue}>
-      <>
-        <Dashboard>
-          {!vsAI && !practice && !multiplayer ? <ModeSelect /> : <Outlet />}
-        </Dashboard>
-      </>
-    </GameContext.Provider>
+    <AuthProvider>
+      <GameContext.Provider value={gameContextValue}>
+        <>
+          {shouldRenderModeSelect ? (
+            <ModeSelect></ModeSelect>
+          ) : (
+            <Dashboard></Dashboard>
+          )}
+        </>
+      </GameContext.Provider>
+    </AuthProvider>
   );
 }
 

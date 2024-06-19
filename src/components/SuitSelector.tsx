@@ -15,21 +15,21 @@ const SuitSelector = ({ updateSuit }: Props) => {
       <Button
         className="p-1 rounded-none p-0 text-xm h-6"
         variant={"ghost"}
-        onClick={() => handleSuitSelection("Diamonds")}
+        onClick={() => handleSuitSelection("diamonds")}
       >
         Diamonds
       </Button>
       <Button
         className="p-2 rounded-none p-0 text-xm h-6"
         variant={"ghost"}
-        onClick={() => handleSuitSelection("Hearts")}
+        onClick={() => handleSuitSelection("hearts")}
       >
         Hearts
       </Button>
       <Button
         className="p-2 rounded-none p-0 text-xm h-6"
         variant={"ghost"}
-        onClick={() => handleSuitSelection("Spades")}
+        onClick={() => handleSuitSelection("spades")}
       >
         Spades
       </Button>
@@ -37,7 +37,7 @@ const SuitSelector = ({ updateSuit }: Props) => {
       <Button
         className="p-2 rounded-none p-0 text-xm h-6"
         variant={"ghost"}
-        onClick={() => handleSuitSelection("Clubs")}
+        onClick={() => handleSuitSelection("clubs")}
       >
         Clubs
       </Button>

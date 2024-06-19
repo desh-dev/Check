@@ -51,7 +51,7 @@ const Dialog = ({ isOpen, onClose, children, title }: DialogProps) => {
         isVisible ? "block" : "hidden"
       } `} // Apply Tailwind classes
     >
-      <div className="flex flex-col w-auto bg-white rounded-lg p-4 shadow-lg justify-center">
+      <div className="flex flex-col m-4 w-auto bg-white rounded-lg p-4 shadow-lg justify-center">
         <div className="w-full flex justify-center pt-1">
           {title && <h1 className="text-xl font-bold">{title}</h1>}
         </div>

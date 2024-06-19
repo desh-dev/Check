@@ -29,7 +29,7 @@ const FormSchema = z.object({
 });
 
 const SelectCardNumber = ({ onSubmit }: SelectCardNumberProps) => {
-  const { setCardNumber, setPractice } = useContext(gameContext);
+  const { setCardNumber } = useContext(gameContext);
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
   });
@@ -78,12 +78,17 @@ const SelectCardNumber = ({ onSubmit }: SelectCardNumberProps) => {
             Start
           </Button>
           <Button
+            className="p-0 w-16 h-10"
             onClick={() => {
               setCardNumber(null);
-              setPractice(false);
             }}
           >
-            <Link to="/">Back</Link>
+            <Link
+              className="w-full h-full mt-4 ml-2 mr-2 flex justify-center"
+              to="/"
+            >
+              Back
+            </Link>
           </Button>
         </div>
       </form>

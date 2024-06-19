@@ -10,12 +10,12 @@ import { Club, Spade, Heart, Diamond } from "lucide-react";
 import { Button } from "../ui/button";
 import gameContext from "@/gameContext";
 import DialogBox from "../DialogBox";
-import BackButton from "../BackButton";
+import { Link } from "react-router-dom";
 
 interface IGamePractice {
   cardNumber: CardNumber;
 }
-export type Suits = "Spades" | "Hearts" | "Diamonds" | "Clubs" | "";
+export type Suits = "spades" | "hearts" | "diamonds" | "clubs" | "";
 
 const Game = ({ cardNumber }: IGamePractice) => {
   const deck = gameService.generateFullDeck();
@@ -38,7 +38,7 @@ const Game = ({ cardNumber }: IGamePractice) => {
     null
   );
 
-  const { practice, setPractice, setCardNumber } = useContext(gameContext);
+  const { setCardNumber } = useContext(gameContext);
   const updateSuit = (newSuit: Suits) => {
     // sets suit when jcommand is played
     // Resolve the existing promise if any (prevents accumulation)
@@ -152,14 +152,14 @@ const Game = ({ cardNumber }: IGamePractice) => {
           // Check if the red joker is being played on the diamonds or hearts suit or a 7
           if (
             (!suit &&
-              (newBoardCard?.suit === "Diamonds" ||
-                newBoardCard?.suit === "Hearts" ||
+              (newBoardCard?.suit === "diamonds" ||
+                newBoardCard?.suit === "hearts" ||
                 newBoardCard?.rank === "7" ||
                 newBoardCard?.rank === "ace" ||
                 newBoardCard?.rank === "jack" ||
                 newBoardCard?.suit === "joker")) ||
-            suit === "Diamonds" ||
-            suit === "Hearts"
+            suit === "diamonds" ||
+            suit === "hearts"
           ) {
             const { drawnCards, remainingDeck } = gameService.pickNCards(
               4,
@@ -190,8 +190,8 @@ const Game = ({ cardNumber }: IGamePractice) => {
               newBoardCard?.rank === "ace" ||
               newBoardCard?.suit === "joker" ||
               newBoardCard?.rank === "jack")) ||
-          suit === "Spades" ||
-          suit === "Clubs"
+          suit === "spades" ||
+          suit === "clubs"
         ) {
           const { drawnCards, remainingDeck } = gameService.pickNCards(
             4,
@@ -245,16 +245,16 @@ const Game = ({ cardNumber }: IGamePractice) => {
           (newBoardCard?.rank === "jack" ||
             (newBoardCard?.suit === "joker" &&
               newBoardCard?.rank === "black" &&
-              card.suit === "Clubs") ||
+              card.suit === "clubs") ||
             (newBoardCard?.suit === "joker" &&
               newBoardCard?.rank === "black" &&
-              card.suit === "Spades") ||
+              card.suit === "spades") ||
             (newBoardCard?.suit === "joker" &&
               newBoardCard?.rank === "red" &&
-              card.suit === "Hearts") ||
+              card.suit === "hearts") ||
             (newBoardCard?.suit === "joker" &&
               newBoardCard?.rank === "red" &&
-              card.suit === "Diamonds") ||
+              card.suit === "diamonds") ||
             card.suit === newBoardCard?.suit ||
             card.rank === newBoardCard?.rank)
         ) {
@@ -324,14 +324,15 @@ const Game = ({ cardNumber }: IGamePractice) => {
   return (
     <>
       <div className="w-full flex justify-start pl-2 pb-0">
-        <BackButton
-          state={practice}
-          setState={setPractice}
-          buttonVariant={"destructive"}
-          toggle={() => setCardNumber(null)}
+        <Button
+          className="p-0 w-12 h-10"
+          variant="destructive"
+          onClick={() => {
+            setCardNumber(null);
+          }}
         >
-          Quit
-        </BackButton>
+          <Link to="/practice">Back</Link>
+        </Button>
       </div>
 
       <PlayerHand
@@ -346,11 +347,11 @@ const Game = ({ cardNumber }: IGamePractice) => {
           <BoardCard card={newBoardCard as CardProps} />
           {suit && (
             <div className="flex bg-muted/40 rounded-md justify-center">
-              {suit === "Spades" ? (
+              {suit === "spades" ? (
                 <Spade />
-              ) : suit === "Hearts" ? (
+              ) : suit === "hearts" ? (
                 <Heart />
-              ) : suit === "Diamonds" ? (
+              ) : suit === "diamonds" ? (
                 <Diamond />
               ) : (
                 <Club />
@@ -374,11 +375,10 @@ const Game = ({ cardNumber }: IGamePractice) => {
               className="text-xl m-4"
               variant="secondary"
               onClick={() => {
-                setPractice(false);
                 setCardNumber(null);
               }}
             >
-              Back to Main Menu
+              <Link to={"/"}>Back to Main Menu</Link>
             </Button>
             <Button
               className="text-xl m-4"
