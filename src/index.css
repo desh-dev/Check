@@ -78,7 +78,15 @@
 .board {
     background: radial-gradient(circle, green, rgb(10, 22, 11));
 }
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0; /* Optional for better alignment */
+}
 
+input[type="number"] {
+  -moz-appearance: textfield; /* Firefox */
+}
 
 
 .chat-messages::-webkit-scrollbar {
@@ -147,3 +155,4 @@ transform: translateX(0) translateY(0);
 .player-hand{
   transition: transform 1s ease;
 }
+

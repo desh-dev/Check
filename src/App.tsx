@@ -6,6 +6,8 @@ import ModeSelect from "./components/ModeSelect";
 import { CardNumber } from "./components/Practice";
 import { useLocation } from "react-router-dom";
 import { AuthProvider } from "./hooks/Auth";
+import { I18nextProvider } from "react-i18next";
+import i18n from "./i18n";
 
 function App() {
   const [auth, setAuth] = useState({});
@@ -22,17 +24,19 @@ function App() {
   const shouldRenderModeSelect = location.pathname === "/";
 
   return (
-    <AuthProvider>
-      <GameContext.Provider value={gameContextValue}>
-        <>
-          {shouldRenderModeSelect ? (
-            <ModeSelect></ModeSelect>
-          ) : (
-            <Dashboard></Dashboard>
-          )}
-        </>
-      </GameContext.Provider>
-    </AuthProvider>
+    <I18nextProvider i18n={i18n}>
+      <AuthProvider>
+        <GameContext.Provider value={gameContextValue}>
+          <>
+            {shouldRenderModeSelect ? (
+              <ModeSelect></ModeSelect>
+            ) : (
+              <Dashboard></Dashboard>
+            )}
+          </>
+        </GameContext.Provider>
+      </AuthProvider>
+    </I18nextProvider>
   );
 }
 

@@ -1,6 +1,7 @@
 import React from "react";
 import { Button } from "./ui/button";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 interface Props {
   setCreateRoom: React.Dispatch<React.SetStateAction<boolean>>;
@@ -8,6 +9,7 @@ interface Props {
 }
 
 const SessionSelect = ({ setCreateRoom, setJoinRoom }: Props) => {
+  const { t } = useTranslation();
   return (
     <>
       <div className="flex gap-10 flex-col bg-muted/40 p-10 rounded-md">
@@ -16,17 +18,17 @@ const SessionSelect = ({ setCreateRoom, setJoinRoom }: Props) => {
           variant={"secondary"}
           onClick={() => setCreateRoom(true)}
         >
-          Create Room
+          {t("create_room")}
         </Button>
         <Button
           className="text-xl p-4"
           variant={"secondary"}
           onClick={() => setJoinRoom(true)}
         >
-          Join Room
+          {t("join_room")}
         </Button>
         <Button className="text-xl p-4">
-          <Link to={"/multiplayer"}>Back</Link>{" "}
+          <Link to={"/multiplayer"}>{t("back")}</Link>{" "}
         </Button>
       </div>
     </>

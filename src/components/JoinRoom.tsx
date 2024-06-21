@@ -19,6 +19,7 @@ import ErrorMessage from "./ErrorMessage";
 import { useAuth } from "@/hooks/Auth";
 import { X, Check } from "lucide-react";
 import DialogBox from "./DialogBox";
+import { useTranslation } from "react-i18next";
 
 interface IJoinRoomProps {
   joinGameRoom: boolean;
@@ -65,6 +66,7 @@ const JoinRoom = ({
   const [errMsg, setErrMsg] = useState("");
   const [isJoining, setJoining] = useState(false);
   const { accountBalance } = useAuth();
+  const { t } = useTranslation();
 
   const joinRoom = async (data: z.infer<typeof FormSchema>) => {
     const socket = socketService.socket;
@@ -121,10 +123,7 @@ const JoinRoom = ({
     <div className="bg-muted/40 p-10 rounded-md">
       {stakedRoom && (
         <DialogBox isOpen={stakedRoom} title="Staked Room">
-          <p className="text-center">
-            This room is staked at <b> {stake} FCFA</b>. Would you like to
-            continue?
-          </p>
+          <p className="text-center">{t("room_staked_at", { stake })}</p>
           <div className="flex gap-6 p-5 justify-center">
             <Button variant="outline" onClick={rejectStakedRoom}>
               <X />
@@ -145,10 +144,10 @@ const JoinRoom = ({
             name="username"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Enter Nickname</FormLabel>
+                <FormLabel>{t("enter_nickname")}</FormLabel>
                 <FormControl>
                   <Input
-                    placeholder="Nickname"
+                    placeholder={`${t("name")}`}
                     defaultValue={playerName}
                     {...field}
                   />
@@ -162,10 +161,10 @@ const JoinRoom = ({
             name="roomName"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Enter Room Name</FormLabel>
+                <FormLabel>{t("enter_room_name")}</FormLabel>
                 <FormControl>
                   <Input
-                    placeholder="Room Name"
+                    placeholder={`${t("room_name")}`}
                     autoComplete="off"
                     {...field}
                   />
@@ -176,10 +175,10 @@ const JoinRoom = ({
           />
           <div className="flex justify-between">
             <Button variant={"secondary"} type="submit" disabled={isJoining}>
-              {isJoining ? "Joining..." : "Join Room"}
+              {isJoining ? `${t("joining")}...` : `${t("join_room")}`}
             </Button>
             <BackButton state={joinGameRoom} setState={setJoinGameRoom}>
-              Back
+              {t("back")}
             </BackButton>
           </div>
         </form>

@@ -29,6 +29,7 @@ import shuffleCards from "../../assets/sounds/shuffleCards.wav";
 import { SpinnerDiamond } from "spinners-react";
 import { useAuth } from "@/hooks/Auth";
 import supabase from "@/config/supabaseClient";
+import { useTranslation } from "react-i18next";
 
 interface IGameMultiplayer {
   roomName: string;
@@ -47,6 +48,7 @@ const Game = ({
 }: IGameMultiplayer) => {
   //MARK: - Variables
   const { user, accountBalance, setAccountBalance } = useAuth();
+  const { t } = useTranslation();
 
   let deck = gameService.generateFullDeck();
   const { playerHands, boardCard, remainingDeck } = gameService.distributeCards(
@@ -1043,12 +1045,12 @@ const Game = ({
           <div>
             {updatingBalance && (
               <p className="text-white text-center font-semibold">
-                Updating balance...
+                {t("updating_balance")}...
               </p>
             )}
             {playAgain && !gameLeft && !updatingBalance && (
               <p className="text-white text-center font-semibold">
-                Waiting for opponent...
+                {t("waiting_for_opp")}...
               </p>
             )}
           </div>
@@ -1062,14 +1064,16 @@ const Game = ({
     <>
       <div className="flex w-full pl-2 pr-2 justify-between">
         <Button onClick={() => setLeaveGame(true)} variant="destructive">
-          Quit
+          {t("quit")}
         </Button>
         {stake && (
           <div>
-            <p className="text-white text-xs font-semibold">{`winnings: ${
-              winnings > 0 ? "+" + winnings * 0.9 : winnings
-            }`}</p>
-            <p className="text-white text-xs font-semibold">{`gameroom balance: ${tempAccountBalance}`}</p>
+            <p className="text-white text-xs font-semibold">{`${t(
+              "winnings"
+            )}: ${winnings > 0 ? "+" + winnings * 0.9 : winnings}`}</p>
+            <p className="text-white text-xs font-semibold">{`${t(
+              "gameroom_balance"
+            )}: ${tempAccountBalance}`}</p>
           </div>
         )}
         <Button
@@ -1144,7 +1148,7 @@ const Game = ({
         </div>
       </div>
       {leaveGame && (
-        <DialogBox isOpen={leaveGame} title="Are you sure?">
+        <DialogBox isOpen={leaveGame} title={`${t("are_you_sure")}`}>
           <div className="flex gap-6 p-5 justify-center">
             <Button
               variant="secondary"
@@ -1178,10 +1182,12 @@ const Game = ({
                 )
               )}
               <Button variant="secondary" onClick={finishGame}>
-                {stake && winnings > 0 ? "Take winnings" : "Quit"}
+                {stake && winnings > 0
+                  ? `${t("take_winnings")}`
+                  : `${t("quit")}`}
               </Button>
               <Button variant="secondary" onClick={playAgainFunction}>
-                Play Again
+                {t("play_again")}
               </Button>
             </div>
           </DialogBox>
@@ -1193,16 +1199,18 @@ const Game = ({
             !gameWon && !stake
               ? "You Win!"
               : stake
-              ? `Winnings: ${winnings > 0 ? "+" + winnings * 0.9 : winnings}`
+              ? `${t("winnings")}: ${
+                  winnings > 0 ? "+" + winnings * 0.9 : winnings
+                }`
               : ""
           }
         >
           <div className="w-full flex flex-col gap-5 justify-center p-4 rounded-md">
             <p className="text-center">
-              Opponent left {gameWon ? "room" : "game"}
+              {t("opponent_left")} {gameWon ? "room" : "game"}
             </p>
             <Button variant="ghost" onClick={finishGame}>
-              {stake && winnings > 0 ? "Take winnings" : <Home />}
+              {stake && winnings > 0 ? `${t("take_winnings")}` : <Home />}
             </Button>
           </div>
         </DialogBox>
@@ -1213,7 +1221,7 @@ const Game = ({
           title={`Balance: ${tempAccountBalance}FCFA`}
         >
           <div className="w-full flex flex-col gap-5 justify-center p-4 rounded-md">
-            <p className="text-center">Insufficient balance to continue</p>
+            <p className="text-center">{t("insufficient_balance")}</p>
             <Button variant="ghost" onClick={finishGame}>
               <Home />
             </Button>
@@ -1226,12 +1234,10 @@ const Game = ({
           title={`Winnings: +${winnings * 0.9}`}
         >
           <div className="w-full flex flex-col gap-5 justify-center p-4 rounded-md">
-            <p className="text-center">
-              Opponent's balance is insufficient to continue
-            </p>
+            <p className="text-center">{t("opp_insufficient_balance")}</p>
 
             <Button variant="ghost" onClick={finishGame}>
-              Take winnings
+              {t("take_winnings")}
             </Button>
           </div>
         </DialogBox>

@@ -15,6 +15,8 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import Rules from "./Rules";
 import { Link, Outlet } from "react-router-dom";
 import { useAuth } from "../hooks/Auth";
+import { useTranslation } from "react-i18next";
+import i18n from "../i18n";
 
 interface DashboardProps {
   children?: React.ReactNode;
@@ -22,6 +24,14 @@ interface DashboardProps {
 
 const Dashboard = ({ children }: DashboardProps) => {
   const { user, accountBalance, signOut } = useAuth();
+  const { t } = useTranslation();
+
+  const englishSwitch = () => {
+    i18n.changeLanguage("en");
+  };
+  const frenchSwitch = () => {
+    i18n.changeLanguage("fr");
+  };
 
   return (
     <div className="grid min-h-screen w-full md:grid-cols-[100px_1fr] lg:grid-cols-[200px_1fr]">
@@ -38,7 +48,7 @@ const Dashboard = ({ children }: DashboardProps) => {
                   {accountBalance} FCFA
                 </h2>
               )}
-              <History />
+              {/* <History /> */}
               <Rules />
             </nav>
           </div>
@@ -67,6 +77,27 @@ const Dashboard = ({ children }: DashboardProps) => {
                   )}
                   <History />
                   <Rules />
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button className="mx-[-0.65rem] flex items-center gap-4 px-3 py-2 text-muted-foreground hover:text-foreground">
+                        {t("language")}
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem
+                        onClick={englishSwitch}
+                        className="cursor-pointer"
+                      >
+                        {t("english")}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={frenchSwitch}
+                        className="cursor-pointer"
+                      >
+                        {t("french")}
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               </nav>
             </SheetContent>
@@ -96,17 +127,19 @@ const Dashboard = ({ children }: DashboardProps) => {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                <DropdownMenuLabel>{t("my_account")}</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>Settings</DropdownMenuItem>
-                <DropdownMenuItem>Support</DropdownMenuItem>
+                <DropdownMenuItem>{t("settings")}</DropdownMenuItem>
+                <DropdownMenuItem>{t("support")}</DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={signOut}>Logout</DropdownMenuItem>
+                <DropdownMenuItem onClick={signOut}>
+                  {t("logout")}
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
             <Button className="rounded-lg">
-              <Link to={"/login"}>Log in</Link>
+              <Link to={"/login"}>{t("login")}</Link>
             </Button>
           )}
         </header>

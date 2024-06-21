@@ -19,6 +19,7 @@ import BackButton from "./BackButton";
 import ErrorMessage from "./ErrorMessage";
 import { Checkbox } from "./ui/checkbox";
 import { useAuth } from "@/hooks/Auth";
+import { useTranslation } from "react-i18next";
 
 interface IJoinRoomProps {
   playerName: string;
@@ -69,6 +70,7 @@ const CreateRoom = ({
   const [errMsg, setErrMsg] = useState("");
   const [isJoining, setJoining] = useState(false);
   const { user, accountBalance } = useAuth();
+  const { t } = useTranslation();
 
   const joinRoom = async (data: z.infer<typeof FormSchema>) => {
     let randomRoomName = "";
@@ -147,10 +149,10 @@ const CreateRoom = ({
             name="username"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Enter Nickname</FormLabel>
+                <FormLabel>{t("enter_nickname")}</FormLabel>
                 <FormControl>
                   <Input
-                    placeholder="Name"
+                    placeholder={`${t("name")}`}
                     defaultValue={playerName}
                     {...field}
                   />
@@ -179,7 +181,7 @@ const CreateRoom = ({
               htmlFor="terms"
               className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
             >
-              Play with stake
+              {t("play_with_stake")}
             </label>
           </div>
           <FormField
@@ -194,7 +196,7 @@ const CreateRoom = ({
                     type="number"
                     value={formData.stake}
                     onChange={handleChange}
-                    placeholder="Place stake"
+                    placeholder={`${t("place_stake")}`}
                     autoComplete="off"
                     disabled={
                       !withStake ||
@@ -209,10 +211,10 @@ const CreateRoom = ({
           />
           <div className="flex justify-between">
             <Button variant={"secondary"} type="submit" disabled={isJoining}>
-              {isJoining ? "Creating..." : "Create Room"}
+              {isJoining ? `${t("creating")}...` : `${t("create_room")}`}
             </Button>
             <BackButton state={createRoom} setState={setCreateRoom}>
-              Back
+              {t("back")}
             </BackButton>
           </div>
         </form>

@@ -11,6 +11,7 @@ import { Button } from "../ui/button";
 import gameContext from "@/gameContext";
 import DialogBox from "../DialogBox";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 interface IGamePractice {
   cardNumber: CardNumber;
@@ -37,6 +38,7 @@ const Game = ({ cardNumber }: IGamePractice) => {
   const suitPromiseRef = useRef<{ resolve: (value: Suits) => void } | null>(
     null
   );
+  const { t } = useTranslation();
 
   const { setCardNumber } = useContext(gameContext);
   const updateSuit = (newSuit: Suits) => {
@@ -321,6 +323,8 @@ const Game = ({ cardNumber }: IGamePractice) => {
     handleGameWin();
   }, [player1, player2]);
 
+  //MARK: JSX
+
   return (
     <>
       <div className="w-full flex justify-start pl-2 pb-0">
@@ -331,7 +335,7 @@ const Game = ({ cardNumber }: IGamePractice) => {
             setCardNumber(null);
           }}
         >
-          <Link to="/practice">Back</Link>
+          <Link to="/practice">{t("back")}</Link>
         </Button>
       </div>
 
@@ -378,14 +382,14 @@ const Game = ({ cardNumber }: IGamePractice) => {
                 setCardNumber(null);
               }}
             >
-              <Link to={"/"}>Back to Main Menu</Link>
+              <Link to={"/"}>{t("back_to_menu")}</Link>
             </Button>
             <Button
               className="text-xl m-4"
               variant="secondary"
               onClick={() => setCardNumber(null)}
             >
-              Play Again
+              {t("play_again")}
             </Button>
           </div>
         </DialogBox>
